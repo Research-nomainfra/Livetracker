@@ -5,61 +5,136 @@
   <title>HPCL Live Delivery Tracker</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    body { margin: 0; font-family: "Segoe UI", Tahoma, sans-serif; display: flex; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      display: flex;
+    }
+
     #sidebar {
-      width: 320px; background: #f9fafb; border-right: 1px solid #ddd; padding: 20px;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1); overflow-y: auto; height: 100vh;
+      width: 320px;
+      background: #f9fafb;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      height: 100vh;
     }
-    #map { flex: 1; height: 100vh; }
-    select, button {
-      width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;
-      margin-top: 6px; margin-bottom: 12px; font-size: 14px;
+
+    #map {
+      flex: 1;
+      height: 100vh;
     }
-    button { background-color: #0056b3; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #004494; }
-    .delivery-list { margin-top: 10px; background: #eef2f7; padding: 10px;
-      border-radius: 8px; max-height: 250px; overflow-y: auto; }
+
+    select,
+    button {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #0056b3;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #004494;
+    }
+
+    .delivery-list {
+      margin-top: 10px;
+      background: #eef2f7;
+      padding: 10px;
+      border-radius: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
     .delivery-item {
-      background: white; margin-bottom: 8px; padding: 8px 10px;
-      border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-      font-size: 14px; position: relative;
+      position: relative;
+      background: #fff;
+      margin-bottom: 10px;
+      padding: 10px 12px 8px 12px;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      font-size: 13px;
+      line-height: 1.4;
     }
+
+    .delivery-item strong {
+      display: block;
+      font-size: 13px;
+      color: #222;
+      margin-bottom: 4px;
+    }
+
+    .delivery-item small {
+      color: #555;
+      font-size: 12px;
+    }
+
     .close-btn {
-      position: absolute; top: 8px; right: 8px;
-      background: #ff4d4d; color: white; border: none;
-      border-radius: 4px; cursor: pointer; padding: 2px 6px;
-      font-size: 12px; line-height: 1;
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: transparent;
+      border: none;
+      color: #999;
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s ease;
     }
-    .close-btn:hover { background: #d93636; }
-    #railDistance { font-weight: bold; color: #004494; margin-top: 10px; }
+
+    .close-btn:hover {
+      color: #ff4d4d;
+    }
+
+    #railDistance {
+      font-weight: bold;
+      color: #004494;
+      margin-top: 10px;
+    }
   </style>
 </head>
+
 <body>
   <div id="sidebar">
     <h2>HPCL Live Tracker</h2>
     <p><strong>Origin:</strong> Haldia Petrochemicals, WB</p>
+
     <label><strong>Choose Stock Point:</strong></label>
     <select id="stockSelect"></select>
+
     <div id="railDistance">📏 Rail Route Distance: —</div>
     <button id="resetBtn">🔄 Reset Map</button>
+
     <p><strong>Delivery Zone:</strong> 70 km radius</p>
     <p><strong>Delivery History:</strong></p>
     <div id="deliveryList" class="delivery-list"></div>
   </div>
 
   <div id="map"></div>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // ---------- Colored Marker Icons ----------
-    const iconBase = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/";
+    // ---------- Marker Icons ----------
+    const iconBase =
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/";
     const greenIcon = new L.Icon({
       iconUrl: iconBase + "marker-icon-green.png",
       shadowUrl: iconBase + "marker-shadow.png",
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowSize: [41, 41],
     });
     const redIcon = new L.Icon({
       iconUrl: iconBase + "marker-icon-red.png",
@@ -67,7 +142,7 @@
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowSize: [41, 41],
     });
     const blueIcon = new L.Icon({
       iconUrl: iconBase + "marker-icon-blue.png",
@@ -75,20 +150,27 @@
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowSize: [41, 41],
     });
 
-    // ---------- Map Initialization ----------
+    // ---------- Map Setup ----------
     const map = L.map("map", {
-      minZoom: 4, maxZoom: 16, maxBoundsViscosity: 0.5,
-      maxBounds: [[6.5, 68.1],[35.6, 97.3]]
+      minZoom: 4,
+      maxZoom: 16,
+      maxBoundsViscosity: 0.5,
+      maxBounds: [
+        [6.5, 68.1],
+        [35.6, 97.3],
+      ],
     }).setView([20.5937, 78.9629], 6);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
     const origin = [22.0667, 88.1145];
     const radius = 70000;
-    L.marker(origin, { icon: redIcon }).bindPopup("Haldia Petrochemicals, WB").addTo(map);
+    L.marker(origin, { icon: redIcon })
+      .bindPopup("Haldia Petrochemicals, WB")
+      .addTo(map);
 
     const stockSelect = document.getElementById("stockSelect");
     const resetBtn = document.getElementById("resetBtn");
@@ -97,15 +179,17 @@
 
     let stockData = {};
     let currentStock = null;
-    let circle = null, stockMarker = null, railRouteLine = null;
+    let circle = null,
+      stockMarker = null,
+      railRouteLine = null;
     let deliveryCounter = 0;
-    let deliveryMap = {}; // Track each delivery’s line + marker
+    let deliveryMap = {}; // Track each delivery’s route & marker
 
     // ---------- Load Routes ----------
     async function loadRoutes() {
       const res = await fetch("/routes");
       stockData = await res.json();
-      Object.keys(stockData).forEach(key => {
+      Object.keys(stockData).forEach((key) => {
         const opt = document.createElement("option");
         opt.value = key;
         opt.textContent = stockData[key].name;
@@ -120,11 +204,18 @@
       if (!routeCoords) return;
       let total = 0;
       for (let i = 1; i < routeCoords.length; i++)
-        total += map.distance(routeCoords[i-1], routeCoords[i]);
+        total += map.distance(routeCoords[i - 1], routeCoords[i]);
       const totalKm = (total / 1000).toFixed(1);
       railDistanceDiv.innerHTML = `📏 Rail Route Distance: ${totalKm} km`;
-      railRouteLine = L.polyline(routeCoords, { color: "green", dashArray: "5,5", weight: 3 })
-        .bindPopup(`🚄 ${stockData[stockKey].name}<br>📏 ${totalKm} km`).addTo(map);
+      railRouteLine = L.polyline(routeCoords, {
+        color: "green",
+        dashArray: "5,5",
+        weight: 3,
+      })
+        .bindPopup(
+          `🚄 ${stockData[stockKey].name}<br>📏 ${totalKm} km`
+        )
+        .addTo(map);
     }
 
     function setStockPoint(stockKey) {
@@ -132,13 +223,19 @@
       currentStock = stock;
       if (circle) map.removeLayer(circle);
       if (stockMarker) map.removeLayer(stockMarker);
-      circle = L.circle(stock.coords, { radius, color: "green", fillOpacity: 0.1 }).addTo(map);
-      stockMarker = L.marker(stock.coords, { icon: greenIcon }).bindPopup(stock.name).addTo(map);
+      circle = L.circle(stock.coords, {
+        radius,
+        color: "green",
+        fillOpacity: 0.1,
+      }).addTo(map);
+      stockMarker = L.marker(stock.coords, { icon: greenIcon })
+        .bindPopup(stock.name)
+        .addTo(map);
       map.setView(stock.coords, 7);
       drawRailRoute(stockKey);
     }
 
-    stockSelect.addEventListener("change", e => setStockPoint(e.target.value));
+    stockSelect.addEventListener("change", (e) => setStockPoint(e.target.value));
 
     resetBtn.addEventListener("click", () => {
       Object.values(deliveryMap).forEach(({ routeLine, destMarker }) => {
@@ -151,12 +248,14 @@
     });
 
     async function getLocationName(lat, lng) {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
       const data = await res.json();
       return data.display_name || "Unknown Location";
     }
 
-    // ---------- Handle Map Click (Add Delivery) ----------
+    // ---------- On Map Click (Add Delivery) ----------
     map.on("click", async (e) => {
       const dest = [e.latlng.lat, e.latlng.lng];
       if (map.distance(currentStock.coords, dest) > radius)
@@ -167,30 +266,34 @@
       const res = await fetch(url);
       const data = await res.json();
 
-      const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
-      const distance = (data.features[0].properties.segments[0].distance / 1000).toFixed(2);
+      const coords = data.features[0].geometry.coordinates.map((c) => [c[1], c[0]]);
+      const distance = (
+        data.features[0].properties.segments[0].distance / 1000
+      ).toFixed(2);
       const duration = data.features[0].properties.segments[0].duration / 3600;
       const hours = Math.floor(duration);
       const minutes = Math.round((duration % 1) * 60);
       const travelTime = `${hours}h ${minutes}m`;
 
-      // Add delivery marker + line
       const routeLine = L.polyline(coords, { color: "black", weight: 4 }).addTo(map);
-      const destMarker = L.marker(dest, { icon: blueIcon }).addTo(map)
-        .bindPopup(`<b>${locationName}</b><br>📏 ${distance} km<br>⏱️ ${travelTime}`).openPopup();
+      const destMarker = L.marker(dest, { icon: blueIcon })
+        .addTo(map)
+        .bindPopup(
+          `<b>${locationName}</b><br>📏 ${distance} km<br>⏱️ ${travelTime}`
+        )
+        .openPopup();
 
-      // Track it
       const deliveryId = ++deliveryCounter;
       deliveryMap[deliveryId] = { routeLine, destMarker };
 
-      // Add to sidebar with close button
+      // Create delivery card
       const div = document.createElement("div");
       div.className = "delivery-item";
       div.dataset.id = deliveryId;
       div.innerHTML = `
-        <strong>${locationName}</strong><br>
-        <small>📏 ${distance} km | ⏱️ ${travelTime}</small>
-        <button class="close-btn">❌</button>
+        <button class="close-btn" title="Remove">×</button>
+        <strong>${locationName}</strong>
+        <small>📏 ${distance} km &nbsp; ⏱️ ${travelTime}</small>
       `;
       deliveryList.prepend(div);
 
