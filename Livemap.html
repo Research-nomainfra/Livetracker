@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>HPCL Live Delivery Tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body { margin: 0; font-family: "Segoe UI", Tahoma, sans-serif; display: flex; }
+    #sidebar {
+      width: 320px; background: #f9fafb; border-right: 1px solid #ddd; padding: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1); overflow-y: auto; height: 100vh;
+    }
+    #map { flex: 1; height: 100vh; }
+    select, button {
+      width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;
+      margin-top: 6px; margin-bottom: 12px; font-size: 14px;
+    }
+    button { background-color: #0056b3; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #004494; }
+    .delivery-list { margin-top: 10px; background: #eef2f7; padding: 10px;
+      border-radius: 8px; max-height: 250px; overflow-y: auto; }
+    .delivery-item { background: white; margin-bottom: 8px; padding: 8px 10px;
+      border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-size: 14px; }
+    #railDistance { font-weight: bold; color: #004494; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h2>HPCL Live Tracker</h2>
+    <p><strong>Origin:</strong> Haldia Petrochemicals, WB</p>
+    <label><strong>Choose Stock Point:</strong></label>
+    <select id="stockSelect"></select>
+    <div id="railDistance">📏 Rail Route Distance: —</div>
+    <button id="resetBtn">🔄 Reset Map</button>
+    <p><strong>Delivery Zone:</strong> 70 km radius</p>
+    <p><strong>Delivery History:</strong></p>
+    <div id="deliveryList" class="delivery-list"></div>
+  </div>
+
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    const map = L.map("map", {
+      minZoom: 4, maxZoom: 16, maxBoundsViscosity: 0.5,
+      maxBounds: [[6.5, 68.1],[35.6, 97.3]]
+    }).setView([20.5937, 78.9629], 6);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+    const origin = [22.0667, 88.1145];
+    const radius = 70000;
+    L.marker(origin).bindPopup("Haldia Petrochemicals, WB").addTo(map);
+
+    const stockSelect = document.getElementById("stockSelect");
+    const resetBtn = document.getElementById("resetBtn");
+    const railDistanceDiv = document.getElementById("railDistance");
+    const deliveryList = document.getElementById("deliveryList");
+
+    let stockData = {};
+    let currentStock = null;
+    let circle = null, stockMarker = null, railRouteLine = null, deliveryLayers = [];
+
+    async function loadRoutes() {
+      const res = await fetch("/routes");
+      stockData = await res.json();
+      Object.keys(stockData).forEach(key => {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = stockData[key].name;
+        stockSelect.appendChild(opt);
+      });
+      setStockPoint(Object.keys(stockData)[0]);
+    }
+
+    function drawRailRoute(stockKey) {
+      if (railRouteLine) map.removeLayer(railRouteLine);
+      const routeCoords = stockData[stockKey].route;
+      if (!routeCoords) return;
+      let total = 0;
+      for (let i = 1; i < routeCoords.length; i++)
+        total += map.distance(routeCoords[i-1], routeCoords[i]);
+      const totalKm = (total / 1000).toFixed(1);
+      railDistanceDiv.innerHTML = `📏 Rail Route Distance: ${totalKm} km`;
+      railRouteLine = L.polyline(routeCoords, { color: "green", dashArray: "5,5", weight: 3 })
+        .bindPopup(`🚄 ${stockData[stockKey].name}<br>📏 ${totalKm} km`).addTo(map);
+    }
+
+    function setStockPoint(stockKey) {
+      const stock = stockData[stockKey];
+      currentStock = stock;
+      if (circle) map.removeLayer(circle);
+      if (stockMarker) map.removeLayer(stockMarker);
+      circle = L.circle(stock.coords, { radius, color: "green", fillOpacity: 0.1 }).addTo(map);
+      stockMarker = L.marker(stock.coords).bindPopup(stock.name).addTo(map);
+      map.setView(stock.coords, 7);
+      drawRailRoute(stockKey);
+    }
+
+    stockSelect.addEventListener("change", e => setStockPoint(e.target.value));
+    resetBtn.addEventListener("click", () => {
+      deliveryLayers.forEach(l => map.removeLayer(l));
+      deliveryLayers = [];
+      deliveryList.innerHTML = "";
+      map.setView(currentStock.coords, 7);
+    });
+
+    async function getLocationName(lat, lng) {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const data = await res.json();
+      return data.display_name || "Unknown Location";
+    }
+
+    map.on("click", async (e) => {
+      const dest = [e.latlng.lat, e.latlng.lng];
+      if (map.distance(currentStock.coords, dest) > radius) return alert("Outside 70 km delivery zone");
+      const locationName = await getLocationName(dest[0], dest[1]);
+      const url = `/route?start_lat=${currentStock.coords[0]}&start_lng=${currentStock.coords[1]}&end_lat=${dest[0]}&end_lng=${dest[1]}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+      const distance = (data.features[0].properties.segments[0].distance / 1000).toFixed(2);
+      const duration = data.features[0].properties.segments[0].duration / 3600;
+      const hours = Math.floor(duration);
+      const minutes = Math.round((duration % 1) * 60);
+      const travelTime = `${hours}h ${minutes}m`;
+      const routeLine = L.polyline(coords, { color: "black", weight: 4 }).addTo(map);
+      deliveryLayers.push(routeLine);
+      const destMarker = L.marker(dest).addTo(map)
+        .bindPopup(`<b>${locationName}</b><br>📏 ${distance} km<br>⏱️ ${travelTime}`).openPopup();
+      deliveryLayers.push(destMarker);
+      const div = document.createElement("div");
+      div.className = "delivery-item";
+      div.innerHTML = `<strong>${locationName}</strong><small>📏 ${distance} km | ⏱️ ${travelTime}</small>`;
+      deliveryList.prepend(div);
+    });
+
+    loadRoutes();
+  </script>
+</body>
+</html>
