@@ -49,8 +49,9 @@ app.get("/route", async (req, res) => {
 
 // ✅ Serve your main app
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "LiveMap.html"));
+  res.sendFile(path.join(__dirname, "Livemap.html"));
 });
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`✅ Server running → http://localhost:${PORT}`));
+
