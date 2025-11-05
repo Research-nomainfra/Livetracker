@@ -19,8 +19,18 @@
     button:hover { background-color: #004494; }
     .delivery-list { margin-top: 10px; background: #eef2f7; padding: 10px;
       border-radius: 8px; max-height: 250px; overflow-y: auto; }
-    .delivery-item { background: white; margin-bottom: 8px; padding: 8px 10px;
-      border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-size: 14px; }
+    .delivery-item {
+      background: white; margin-bottom: 8px; padding: 8px 10px;
+      border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      font-size: 14px; position: relative;
+    }
+    .close-btn {
+      position: absolute; top: 8px; right: 8px;
+      background: #ff4d4d; color: white; border: none;
+      border-radius: 4px; cursor: pointer; padding: 2px 6px;
+      font-size: 12px; line-height: 1;
+    }
+    .close-btn:hover { background: #d93636; }
     #railDistance { font-weight: bold; color: #004494; margin-top: 10px; }
   </style>
 </head>
@@ -41,15 +51,16 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <script>
+    // ---------- Colored Marker Icons ----------
     const iconBase = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/";
     const greenIcon = new L.Icon({
-        iconUrl: iconBase + "marker-icon-green.png",
-        shadowUrl: iconBase + "marker-shadow.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
+      iconUrl: iconBase + "marker-icon-green.png",
+      shadowUrl: iconBase + "marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
     const redIcon = new L.Icon({
       iconUrl: iconBase + "marker-icon-red.png",
       shadowUrl: iconBase + "marker-shadow.png",
@@ -66,6 +77,8 @@
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
     });
+
+    // ---------- Map Initialization ----------
     const map = L.map("map", {
       minZoom: 4, maxZoom: 16, maxBoundsViscosity: 0.5,
       maxBounds: [[6.5, 68.1],[35.6, 97.3]]
@@ -84,8 +97,11 @@
 
     let stockData = {};
     let currentStock = null;
-    let circle = null, stockMarker = null, railRouteLine = null, deliveryLayers = [];
+    let circle = null, stockMarker = null, railRouteLine = null;
+    let deliveryCounter = 0;
+    let deliveryMap = {}; // Track each delivery’s line + marker
 
+    // ---------- Load Routes ----------
     async function loadRoutes() {
       const res = await fetch("/routes");
       stockData = await res.json();
@@ -123,9 +139,13 @@
     }
 
     stockSelect.addEventListener("change", e => setStockPoint(e.target.value));
+
     resetBtn.addEventListener("click", () => {
-      deliveryLayers.forEach(l => map.removeLayer(l));
-      deliveryLayers = [];
+      Object.values(deliveryMap).forEach(({ routeLine, destMarker }) => {
+        map.removeLayer(routeLine);
+        map.removeLayer(destMarker);
+      });
+      deliveryMap = {};
       deliveryList.innerHTML = "";
       map.setView(currentStock.coords, 7);
     });
@@ -136,32 +156,54 @@
       return data.display_name || "Unknown Location";
     }
 
+    // ---------- Handle Map Click (Add Delivery) ----------
     map.on("click", async (e) => {
       const dest = [e.latlng.lat, e.latlng.lng];
-      if (map.distance(currentStock.coords, dest) > radius) return alert("Outside 70 km delivery zone");
+      if (map.distance(currentStock.coords, dest) > radius)
+        return alert("Outside 70 km delivery zone");
+
       const locationName = await getLocationName(dest[0], dest[1]);
       const url = `/route?start_lat=${currentStock.coords[0]}&start_lng=${currentStock.coords[1]}&end_lat=${dest[0]}&end_lng=${dest[1]}`;
       const res = await fetch(url);
       const data = await res.json();
+
       const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
       const distance = (data.features[0].properties.segments[0].distance / 1000).toFixed(2);
       const duration = data.features[0].properties.segments[0].duration / 3600;
       const hours = Math.floor(duration);
       const minutes = Math.round((duration % 1) * 60);
       const travelTime = `${hours}h ${minutes}m`;
+
+      // Add delivery marker + line
       const routeLine = L.polyline(coords, { color: "black", weight: 4 }).addTo(map);
-      deliveryLayers.push(routeLine);
       const destMarker = L.marker(dest, { icon: blueIcon }).addTo(map)
         .bindPopup(`<b>${locationName}</b><br>📏 ${distance} km<br>⏱️ ${travelTime}`).openPopup();
-      deliveryLayers.push(destMarker);
+
+      // Track it
+      const deliveryId = ++deliveryCounter;
+      deliveryMap[deliveryId] = { routeLine, destMarker };
+
+      // Add to sidebar with close button
       const div = document.createElement("div");
       div.className = "delivery-item";
-      div.innerHTML = `<strong>${locationName}</strong><small>📏 ${distance} km | ⏱️ ${travelTime}</small>`;
+      div.dataset.id = deliveryId;
+      div.innerHTML = `
+        <strong>${locationName}</strong><br>
+        <small>📏 ${distance} km | ⏱️ ${travelTime}</small>
+        <button class="close-btn">❌</button>
+      `;
       deliveryList.prepend(div);
+
+      // Handle close button
+      div.querySelector(".close-btn").addEventListener("click", () => {
+        map.removeLayer(deliveryMap[deliveryId].routeLine);
+        map.removeLayer(deliveryMap[deliveryId].destMarker);
+        delete deliveryMap[deliveryId];
+        div.remove();
+      });
     });
 
     loadRoutes();
   </script>
 </body>
-
 </html>
