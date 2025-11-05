@@ -15,19 +15,19 @@ app.use(express.static(__dirname));
 const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjExMTlhNjU3YzJhNzRlZmE5MjI2N2VjZGM1YTQzNGFjIiwiaCI6Im11cm11cjY0In0=";
 
 // ✅ New endpoint: serve dynamic rail route data
-app.get("/routes", (req, res) => {
-  const routesPath = path.join(__dirname, "data", "routes.json");
+app.get("/Routes", (req, res) => {
+  const routesPath = path.join(__dirname, "data", "Routes.json");
   try {
     const data = fs.readFileSync(routesPath, "utf8");
     res.json(JSON.parse(data));
   } catch (err) {
     console.error("Failed to load routes:", err);
-    res.status(500).json({ error: "Unable to load routes.json" });
+    res.status(500).json({ error: "Unable to load Routes.json" });
   }
 });
 
 // ✅ Proxy endpoint for OpenRouteService
-app.get("/route", async (req, res) => {
+app.get("/Route", async (req, res) => {
   const { start_lat, start_lng, end_lat, end_lng } = req.query;
   if (!start_lat || !start_lng || !end_lat || !end_lng) {
     return res.status(400).json({ error: "Missing coordinates" });
@@ -54,4 +54,5 @@ app.get("/", (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`✅ Server running → http://localhost:${PORT}`));
+
 
