@@ -57,44 +57,54 @@
       overflow-y: auto;
     }
 
+    /* --- Delivery Card --- */
     .delivery-item {
       position: relative;
       background: #fff;
       margin-bottom: 10px;
-      padding: 10px 12px 8px 12px;
+      padding: 12px 14px;
       border-radius: 10px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       font-size: 13px;
       line-height: 1.4;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     .delivery-item strong {
       display: block;
-      font-size: 13px;
       color: #222;
-      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      padding-right: 22px; /* space for X */
     }
 
-    .delivery-item small {
-      color: #555;
-      font-size: 12px;
-    }
-
+    /* FIXED CLOSE BUTTON */
     .close-btn {
+      all: unset; /* resets all default button styles */
       position: absolute;
       top: 6px;
-      right: 6px;
-      background: transparent;
-      border: none;
+      right: 10px;
       color: #999;
-      font-size: 16px;
+      font-size: 20px;
       cursor: pointer;
       line-height: 1;
+      font-weight: bold;
       transition: color 0.2s ease;
+      user-select: none;
     }
 
     .close-btn:hover {
       color: #ff4d4d;
+    }
+
+    .delivery-details {
+      margin-top: 6px;
+      color: #555;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     #railDistance {
@@ -183,7 +193,7 @@
       stockMarker = null,
       railRouteLine = null;
     let deliveryCounter = 0;
-    let deliveryMap = {}; // Track each delivery’s route & marker
+    let deliveryMap = {};
 
     // ---------- Load Routes ----------
     async function loadRoutes() {
@@ -212,9 +222,7 @@
         dashArray: "5,5",
         weight: 3,
       })
-        .bindPopup(
-          `🚄 ${stockData[stockKey].name}<br>📏 ${totalKm} km`
-        )
+        .bindPopup(`🚄 ${stockData[stockKey].name}<br>📏 ${totalKm} km`)
         .addTo(map);
     }
 
@@ -291,9 +299,11 @@
       div.className = "delivery-item";
       div.dataset.id = deliveryId;
       div.innerHTML = `
-        <button class="close-btn" title="Remove">×</button>
+        <button class="close-btn" title="Remove">[×]</button>
         <strong>${locationName}</strong>
-        <small>📏 ${distance} km &nbsp; ⏱️ ${travelTime}</small>
+        <div class="delivery-details">
+          📏 ${distance} km &nbsp;&nbsp; ⏱️ ${travelTime}
+        </div>
       `;
       deliveryList.prepend(div);
 
