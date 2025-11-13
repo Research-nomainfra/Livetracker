@@ -36,6 +36,9 @@ app.get("/Route", async (req, res) => {
 
   const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${ORS_API_KEY}&start=${start_lng},${start_lat}&end=${end_lng},${end_lat}`;
   console.log("→ ORS:", url);
+  console.log("Start coordinates on server:", start_lng, start_lat);
+  console.log("End coordinates on server:", end_lng, end_lat);
+
 
   try {
     const response = await fetch(url);
@@ -55,5 +58,6 @@ app.get("/", (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`✅ Server running → http://localhost:${PORT}`));
+
 
 
