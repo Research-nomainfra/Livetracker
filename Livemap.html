@@ -41,14 +41,38 @@
     header h1{margin:0;font-size:18px;color:var(--accent);font-weight:700}
     header p{margin:0;color:var(--muted);font-size:13px}
 
-    .tab-container{display:flex;gap:8px;margin-top:6px}
+    .tab-container{display: flex;gap: 12px;margin-top: 10px;}
+    
     .tab{
-      flex:1;padding:8px 10px;border-radius:999px;text-align:center;cursor:pointer;
-      background:#eef2f7;color:#111;font-weight:600;border:1px solid transparent;
-      transition:all .18s;
-      font-size:14px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    
+      padding: 12px 18px;
+      border-radius: 16px;
+    
+      font-size: 15px;
+      font-weight: 600;
+    
+      background: #eef1f5;
+      color: #333;
+      cursor: pointer;
+    
+      border: 1px solid #d6d9de;
+      transition: all 0.25s ease;
     }
-    .tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(3,70,161,0.12)}
+    .tab:hover {
+      background: #e4e8ee;
+    }
+    
+    .tab.active {
+      background: #0057c2;
+      border-color: #0057c2;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
 
     .content{flex:1;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:12px}
     .section{background:#fff;border-radius:var(--radius);padding:12px;border:1px solid rgba(15,23,42,0.03) }
@@ -125,8 +149,15 @@
     </header>
 
     <div class="tab-container">
-      <div class="tab active" data-tab="tracking">📦 Tracking</div>
-      <div class="tab" data-tab="history">📋 Delivery History</div>
+      <div class="tab active" data-tab="tracking">
+        <span>📦</span>
+        <span>Tracking</span>
+      </div>
+  
+      <div class="tab" data-tab="history">
+        <span>📝</span>
+        <span>Delivery History</span>
+      </div>
     </div>
 
     <div class="content">
@@ -539,3 +570,4 @@
   </script>
 </body>
 </html>
+
