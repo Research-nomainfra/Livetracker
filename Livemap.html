@@ -25,24 +25,26 @@
 
     body { display:flex; overflow:hidden; }
 
-    /* SIDEBAR */
+    /* ===================================================
+       CLEANED SIDEBAR UI (NO CHANGES TO LOGO HEADER)
+    ===================================================*/
+
     #sidebar {
-      width:380px;
-      min-width:330px;
-      max-width:420px;
-      background:#fff;
-      padding:20px;
-      box-sizing:border-box;
-      height:100vh;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      border-right:1px solid rgba(0,0,0,0.08);
-      box-shadow:6px 0 20px rgba(0,0,0,0.06);
+      width: 380px;
+      min-width: 330px;
+      max-width: 420px;
+      background: #fff;
+      padding: 22px;
+      box-sizing: border-box;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      border-right: 1px solid rgba(0,0,0,0.06);
     }
 
-    /* ---------- NEW HEADER BLOCK (OPTION B) ---------- */
+    /* ---------- HEADER CARD — UNTOUCHED ---------- */
     .header-card {
       background:#ffffff;
       border-radius:12px;
@@ -79,16 +81,18 @@
     .header-sub {
       text-align:center;
       width:100%;
-      margin:6px 0 2px 0;
+      margin-top:2px;
+      margin-bottom:2px;
       font-size:13px;
       color:#475569;
       font-weight:500;
     }
 
+    /* ---------- TABS ---------- */
     .tab-container {
       display:flex;
       gap:10px;
-      margin-top:6px;
+      margin-top:4px;
     }
 
     .tab {
@@ -105,70 +109,88 @@
     }
     .tab.active { background:#0056b3; color:#fff; }
 
+    /* ---------- CONTENT ---------- */
     .content {
       flex:1;
-      overflow:auto;
-      padding-right:6px;
+      overflow-y:auto;
+      padding-right:4px;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:16px;
     }
 
     .section {
       background:#fff;
-      padding:14px;
+      padding:16px;
       border-radius:12px;
       border:1px solid rgba(0,0,0,0.06);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
 
-    label {
+    .section label {
       font-size:13px;
       font-weight:700;
-      margin-bottom:6px;
+      margin-bottom:4px;
+      color:#1e293b;
     }
 
-    select,input,button {
+    select,
+    input,
+    button {
       font-size:14px;
       border-radius:8px;
       padding:10px;
       border:1px solid #d7dce3;
       background:#fff;
+      width:100%;
+      box-sizing:border-box;
     }
 
-    /* DELIVERY GRID */
+    /* ---------- Delivery List ---------- */
     .checkbox-group {
       border:1px solid #dce3eb;
       border-radius:10px;
-      padding:10px;
+      padding:12px;
       background:#fafcff;
-      max-height:150px;
-      overflow:auto;
+      max-height:170px;
+      overflow-y:auto;
+    }
+
+    .checkbox-group::-webkit-scrollbar {
+      width:6px;
+    }
+    .checkbox-group::-webkit-scrollbar-thumb {
+      background:#c8ccd4;
+      border-radius:10px;
     }
 
     .checkbox-grid {
       display:flex;
-      flex-wrap:wrap;
+      flex-direction:column;
       gap:8px;
     }
 
     .checkbox-grid label {
       display:flex;
       align-items:center;
-      gap:6px;
+      gap:8px;
       background:#fff;
       border:1px solid rgba(0,0,0,0.06);
       border-radius:8px;
-      padding:6px;
-      min-width:calc(50% - 8px);
+      padding:8px;
       font-size:13px;
       cursor:pointer;
     }
 
-    /* Manual row */
+    /* ---------- Manual Search ---------- */
     .manual-row {
-      display:flex; gap:8px;
+      display:flex;
+      gap:8px;
     }
     .manual-row input { flex:1; }
+
     .manual-row button {
       width:110px;
       background:#0056b3;
@@ -177,17 +199,39 @@
       cursor:pointer;
     }
 
-    /* History Table */
+    /* Action Buttons */
+    .action-row {
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    #showDeliveriesBtn {
+      background:#0056b3;
+      color:#fff;
+      border:none;
+      font-weight:600;
+    }
+
+    #resetBtn {
+      font-weight:600;
+    }
+
+    /* ---------- History Table ---------- */
     table {
       width:100%;
       border-collapse:collapse;
       font-size:13px;
     }
+
     th,td {
-      padding:8px;
+      padding:8px 6px;
       border-bottom:1px solid #e6eaf0;
     }
-    th { background:#f8fafc; font-weight:700; }
+    th {
+      background:#f8fafc;
+      font-weight:700;
+    }
 
     .remove-btn {
       background:#e63939;
@@ -198,7 +242,7 @@
       cursor:pointer;
     }
 
-    /* Success popup */
+    /* ---------- Loading + Success ---------- */
     #successPopup {
       position:fixed;
       top:16px;
@@ -213,9 +257,11 @@
       z-index:2000;
       font-weight:600;
     }
-    #successPopup.show { opacity:1; transform:translateY(0); }
+    #successPopup.show {
+      opacity:1;
+      transform:translateY(0);
+    }
 
-    /* Loading overlay */
     #loadingOverlay {
       position:fixed;
       inset:0;
@@ -238,9 +284,14 @@
 
     #map { flex:1; height:100vh; }
 
-    /* Mobile responsive */
+    /* ---------- Mobile ---------- */
     @media(max-width:900px){
-      #sidebar { width:100%; max-width:none; height:auto; position:relative; }
+      #sidebar {
+        width:100%;
+        max-width:none;
+        height:auto;
+        position:relative;
+      }
       body { flex-direction:column; }
       #map { height:70vh; }
       .header-card img { width:70px; }
@@ -253,27 +304,26 @@
 
 <div id="sidebar">
 
-  <!-- NEW HEADER BLOCK (logo + title inside card) -->
+  <!-- LOGO CARD (UNCHANGED) -->
   <div class="header-card">
     <img src="Noma Logo (Registered).png" alt="NOMA Logo">
-
     <div class="header-text">
       <h1>NOMA IntelliRoute<br>Console</h1>
     </div>
   </div>
 
-  <!-- Subtitle OUTSIDE the card -->
+  <!-- Subtitle -->
   <div class="header-sub">
     Intelligent Route Planning & Delivery Mapping
   </div>
 
-  <!-- TABS -->
+  <!-- Tabs -->
   <div class="tab-container">
     <div class="tab active" data-tab="tracking">📦 Tracking</div>
     <div class="tab" data-tab="history">📋 History</div>
   </div>
 
-  <!-- MAIN CONTENT -->
+  <!-- Content -->
   <div class="content">
 
     <!-- TRACKING TAB -->
@@ -282,7 +332,7 @@
       <label>Choose Stock Point</label>
       <select id="stockSelect"></select>
 
-      <label style="margin-top:10px;">Select Region</label>
+      <label>Select Region</label>
       <select id="regionSelect">
         <option value="North">North</option>
         <option value="West">West</option>
@@ -290,31 +340,30 @@
         <option value="South">South</option>
       </select>
 
-      <label style="margin-top:10px;">Select Delivery Locations</label>
+      <label>Select Delivery Locations</label>
       <div class="checkbox-group">
         <div class="checkbox-grid" id="checkboxGrid"></div>
       </div>
 
-      <label style="margin-top:10px;">🔍 Search Any Location</label>
+      <label>🔍 Search Any Location</label>
       <div class="manual-row">
         <input id="manualInput" type="text" placeholder="Enter city or address">
         <button id="manualAddBtn">Add</button>
       </div>
 
-      <div style="display:flex; gap:10px; margin-top:14px;">
-        <button id="showDeliveriesBtn" style="flex:1; background:#0056b3; color:#fff;">Show</button>
-        <button id="resetBtn" style="flex:1;">Reset</button>
+      <div class="action-row">
+        <button id="showDeliveriesBtn">Show</button>
+        <button id="resetBtn">Reset</button>
       </div>
 
       <div id="railDistance" style="font-size:13px; margin-top:8px; color:#556;"></div>
-
     </div>
 
     <!-- HISTORY TAB -->
     <div id="history" class="section tab-content" style="display:none;">
       <table>
         <thead>
-          <tr><th>From</th><th>To</th><th>Distance</th><th>Duration</th><th>Status</th><th></th></tr>
+        <tr><th>From</th><th>To</th><th>Distance</th><th>Duration</th><th>Status</th><th></th></tr>
         </thead>
         <tbody id="deliveryTableBody"></tbody>
       </table>
@@ -703,5 +752,6 @@
   </script>
 </body>
 </html>
+
 
 
