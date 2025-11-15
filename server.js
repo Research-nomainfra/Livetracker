@@ -28,7 +28,7 @@ app.get("/Routes", (req, res) => {
 });
 
 // ✅ Proxy endpoint for OpenRouteService
-app.get("/Route", async (req, res) => {
+app.get("/Routes", async (req, res) => {
   const { start_lat, start_lng, end_lat, end_lng } = req.query;
   if (!start_lat || !start_lng || !end_lat || !end_lng) {
     return res.status(400).json({ error: "Missing coordinates" });
@@ -55,3 +55,4 @@ app.get("/", (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`✅ Server running → http://localhost:${PORT}`));
+
