@@ -2,223 +2,293 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>NOMA IntelliLogistics — Route Planner</title>
+  <title>NOMA IntelliLogistics Console</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
   <style>
     :root{
       --accent:#0056b3;
       --accent-dark:#00408a;
       --muted:#6b7280;
-      --card:#ffffff;
       --bg:#f6f7fb;
+      --card:#ffffff;
       --radius:10px;
-      --gap:12px;
     }
 
-    html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;background:var(--bg);color:#0f172a}
-    body{display:flex; gap:18px; align-items:stretch; min-height:100vh;}
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:Inter, "Segoe UI", Roboto, sans-serif;
+      background:var(--bg);
+    }
 
-    /* ---------- SIDEBAR ---------- */
+    body{
+      display:flex;
+      overflow:hidden;
+    }
+
+    /* SIDEBAR */
     #sidebar{
       width:380px;
-      min-width:300px;
-      max-width:420px;
       background:var(--card);
-      box-shadow: 6px 0 20px rgba(13,27,42,0.06);
-      padding:18px;
-      box-sizing:border-box;
+      box-shadow:6px 0 20px rgba(0,0,0,0.06);
+      padding:0;
       display:flex;
       flex-direction:column;
-      gap:12px;
-      height:100vh;
-      overflow:hidden;
-      border-right:1px solid rgba(15,23,42,0.06);
+      overflow-y:auto;
+      border-right:1px solid #e8e8e8;
     }
 
-    /* Header: Logo full-width banner - with 10% left/right inset */
-    .sidebar-header{
-      width:100%;
-      padding:10px 10%;
-      box-sizing:border-box;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
-      background:linear-gradient(180deg,#ffffff,#fbfdff);
-      border-radius:8px;
-      border:1px solid rgba(15,23,42,0.02);
+    /* LOGO BLOCK (UPDATED - OPTION A 30%) */
+    .logo-block{
+      padding:28px 20px 12px 20px;
+      text-align:center;
     }
-    .sidebar-header img.logo{
-      width:120px;        /* fixed size as requested */
+
+    .logo-block img{
+      width:30%;          /* ⬅️ 30% logo width */
+      max-width:110px;
       height:auto;
-      display:block;
-      object-fit:contain;
-    }
-    .app-title{
-      margin:0;
-      font-size:18px;
-      font-weight:700;
-      color:var(--accent);
-      text-align:center;
-    }
-    .app-sub{
-      margin:0;
-      font-size:13px;
-      color:var(--muted);
-      text-align:center;
+      margin-bottom:12px;
     }
 
-    .tab-container{display:flex;gap:10px;margin-top:6px}
+    .app-title{
+      font-size:20px;
+      font-weight:700;
+      color:#003366;
+      margin:0;
+      letter-spacing:0.4px;
+    }
+
+    .app-subtitle{
+      margin-top:6px;
+      margin-bottom:16px;
+      font-size:13px;
+      color:#444;
+      letter-spacing:0.2px;
+    }
+
+    .divider{
+      width:100%;
+      height:1px;
+      background:#e3e3e3;
+      margin:10px 0 16px 0;
+    }
+
+    /* TABS */
+    .tab-container{
+      display:flex;
+      gap:10px;
+      padding:0 20px;
+      margin-bottom:12px;
+    }
+
     .tab{
       flex:1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding:10px 12px;
-      border-radius:12px;
-      font-size:14px;
-      font-weight:700;
+      padding:12px 0;
       background:#eef1f5;
-      color:#222;
-      cursor:pointer;
+      border-radius:10px;
+      text-align:center;
+      font-size:14px;
+      font-weight:600;
+      color:#333;
       border:1px solid #d6d9de;
-      transition:all .18s;
+      cursor:pointer;
+      transition:0.2s;
     }
-    .tab.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 6px 16px rgba(0,80,160,0.12)}
 
-    .content{flex:1;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:12px}
-    .section{background:#fff;border-radius:var(--radius);padding:12px;border:1px solid rgba(15,23,42,0.03)}
+    .tab.active{
+      background:#0057c2;
+      color:white;
+      border-color:#0057c2;
+      box-shadow:0 4px 10px rgba(0,0,0,0.13);
+    }
 
-    label{display:block;font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px}
+    /* CONTENT */
+    .content{
+      padding:20px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .section{
+      background:white;
+      padding:16px;
+      border-radius:10px;
+      border:1px solid #e8e8e8;
+    }
+
+    label{
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:6px;
+      display:block;
+      color:#222;
+    }
 
     select,input,button{
-      font-size:14px;border-radius:8px;padding:10px;border:1px solid #e6e9ef;background:#fff;box-sizing:border-box;
+      width:100%;
+      padding:10px;
+      font-size:14px;
+      border-radius:8px;
+      border:1px solid #dcdfe6;
+      background:white;
     }
 
-    select{appearance:none;padding-right:36px;background-image:linear-gradient(45deg,transparent 50%, #9aa6c7 50%), linear-gradient(135deg,#9aa6c7 50%, transparent 50%); background-position:calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px); background-size:6px 6px,6px 6px;background-repeat:no-repeat;}
-
-    .manual-row{display:flex;gap:8px}
-    .manual-row input{flex:1}
-    .manual-row button{width:112px;background:var(--accent);color:#fff;border:none}
-
-    .btn-primary{background:var(--accent);color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer}
-    .btn-primary:hover{background:var(--accent-dark)}
-
-    /* checkbox group - use grid layout A and smaller height with scroll */
     .checkbox-group{
-      display:block;border-radius:8px;border:1px solid #e6e9ef;padding:8px;background:#fafbff; max-height:160px; overflow:auto;
+      border:1px solid #dcdfe6;
+      border-radius:10px;
+      max-height:170px;   /* ⬅️ Reduced height */
+      overflow-y:auto;    /* ⬅️ Scrollable */
+      background:#f9fafc;
+      padding:10px;
     }
+
     .checkbox-grid{
-      display:flex;flex-wrap:wrap;gap:8px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
     }
+
     .checkbox-grid label{
-      display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:#fff;border:1px solid rgba(15,23,42,0.03);cursor:pointer;font-size:13px;
-      min-width:calc(50% - 8px);
-      box-sizing:border-box;
+      min-width:48%;
+      background:white;
+      padding:6px 8px;
+      border-radius:8px;
+      border:1px solid #e9e9e9;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      gap:6px;
     }
-    .checkbox-grid input[type="checkbox"]{width:16px;height:16px}
 
-    /* table */
-    .history-table{width:100%;border-collapse:collapse;font-size:13px}
-    .history-table th,.history-table td{padding:10px;border-bottom:1px solid #eef2f6;text-align:left}
-    .history-table th{background:#fbfdff;font-weight:700;color:#0f172a;font-size:13px}
-    .remove-btn{background:#e74c3c;color:#fff;border:none;padding:6px 8px;border-radius:6px;cursor:pointer}
-
-    .actions{display:flex;gap:8px;align-items:center}
-
-    #successPopup{position:fixed;top:16px;right:16px;padding:10px 16px;border-radius:10px;background:#e7f9ec;color:#186c23;box-shadow:0 8px 24px rgba(10,40,10,0.06);z-index:1200;opacity:0;transform:translateY(-10px);transition:all .25s}
-    #successPopup.show{opacity:1;transform:translateY(0)}
-
-    #loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,0.86);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:2000}
-    .loader{width:48px;height:48px;border:5px solid #e3e6ee;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:12px}
-    #loadingText{color:var(--accent);font-weight:700}
-    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-
-    /* Map */
-    #map{flex:1; height:100vh; border-left:1px solid rgba(15,23,42,0.03)}
-
-    /* Responsive: move sidebar to top on narrow screens */
-    @media (max-width:900px){
-      body{flex-direction:column;}
-      #sidebar{width:100%;max-width:none;height:auto;min-width:0;border-right:0;border-bottom:1px solid rgba(15,23,42,0.06);}
-      #map{height:60vh;width:100%}
-      .checkbox-grid label{min-width:100%}
+    /* BUTTONS */
+    .btn-primary{
+      background:var(--accent);
+      color:white;
+      border:none;
+      cursor:pointer;
     }
+
+    .btn-primary:hover{
+      background:var(--accent-dark);
+    }
+
+    /* MAP */
+    #map{
+      flex:1;
+      height:100vh;
+    }
+
+    /* SUCCESS POPUP */
+    #successPopup{
+      position:fixed;
+      top:15px;
+      right:15px;
+      padding:12px 18px;
+      background:#e7f9ec;
+      color:#166b28;
+      border-radius:8px;
+      opacity:0;
+      transition:0.25s;
+      font-weight:600;
+      z-index:5000;
+    }
+    #successPopup.show{
+      opacity:1;
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:820px){
+      #sidebar{
+        width:100%;
+        max-width:none;
+        height:auto;
+      }
+      body{
+        flex-direction:column;
+      }
+      #map{
+        height:60vh;
+      }
+      .logo-block img{
+        width:26%;
+      }
+    }
+
   </style>
 </head>
+
 <body>
 
-  <!-- SIDEBAR -->
-  <aside id="sidebar" role="complementary" aria-label="Controls">
+  <!-- ───────────── Sidebar ───────────── -->
+  <div id="sidebar">
 
-    <!-- logo banner: centered, with side padding (10% left/right) so it visually leaves margins -->
-    <div class="sidebar-header" role="banner">
-      <!-- The logo is fixed 120px width but sits within a full-width banner -->
-      <img class="logo" src="Noma Logo (Registered).png" alt="NOMA Logo" />
+    <!-- ⭐ UPDATED LOGO BLOCK ⭐ -->
+    <div class="logo-block">
+      <img src="Noma Logo (Registered).png" alt="NOMA Logo">
       <h1 class="app-title">NOMA IntelliLogistics</h1>
-      <p class="app-sub">Intelligent Delivery Mapping & Route Planning</p>
+      <p class="app-subtitle">Intelligent Delivery Mapping & Route Console</p>
+      <div class="divider"></div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tab-container" role="tablist" aria-label="Main tabs">
-      <div class="tab active" data-tab="tracking" role="tab" aria-selected="true">📦 Planner</div>
-      <div class="tab" data-tab="history" role="tab" aria-selected="false">📝 History</div>
+    <!-- TABS -->
+    <div class="tab-container">
+      <div class="tab active" data-tab="tracking">📦 Tracking</div>
+      <div class="tab" data-tab="history">📝 History</div>
     </div>
 
-    <div class="content" role="main">
+    <!-- CONTENT -->
+    <div class="content">
+      <!-- Tracking -->
+      <div id="tracking" class="section tab-content active">
+        <label>Choose Stock Point</label>
+        <select id="stockSelect"></select>
 
-      <!-- TRACKING -->
-      <div id="tracking" class="section tab-content active" style="display:block">
-        <label for="stockSelect">Choose Stock Point</label>
-        <select id="stockSelect" aria-label="Choose stock point"></select>
-
-        <label for="regionSelect" style="margin-top:8px">Select Region</label>
-        <select id="regionSelect" aria-label="Select region">
+        <label>Select Region</label>
+        <select id="regionSelect">
           <option value="North">North</option>
           <option value="West">West</option>
           <option value="East">East</option>
           <option value="South">South</option>
         </select>
 
-        <label style="margin-top:8px">Select Delivery Locations</label>
-        <div class="checkbox-group" id="checkboxContainer" aria-live="polite" aria-label="Delivery locations">
-          <div class="checkbox-grid" id="checkboxGrid"></div>
+        <label>Select Delivery Locations</label>
+        <div class="checkbox-group">
+          <div id="checkboxGrid" class="checkbox-grid"></div>
         </div>
 
-        <label style="margin-top:8px">🔍 Search Any Delivery Location</label>
-        <div class="manual-row">
-          <input id="manualInput" type="text" placeholder="Enter city, area, or exact address" />
-          <button id="manualAddBtn" class="btn-primary" type="button">Add</button>
+        <label>🔍 Search Any Delivery Location</label>
+        <div style="display:flex;gap:8px;">
+          <input id="manualInput" placeholder="Enter city or exact location">
+          <button id="manualAddBtn" class="btn-primary" style="width:120px;">Add</button>
         </div>
 
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button id="showDeliveriesBtn" class="btn-primary">🚛 Add Selected</button>
-          <button id="resetBtn" style="background:#fff;border:1px solid #e6eefb;color:var(--accent)">🔄 Reset</button>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button id="showDeliveriesBtn" class="btn-primary">🚛 Show Deliveries</button>
+          <button id="resetBtn" style="background:#eef2f7;border:1px solid #dce3ed;color:#004a9d;">🔄 Reset</button>
         </div>
 
-        <div style="margin-top:10px;color:var(--muted);font-size:13px" id="railDistance">📏 Rail Route Distance: —</div>
+        <p id="railDistance" style="font-size:13px;color:#666;margin-top:10px;">📏 Rail Route Distance: —</p>
       </div>
 
-      <!-- HISTORY -->
-      <div id="history" class="section tab-content" style="display:none">
-        <div style="overflow:auto;max-height:56vh">
-          <table class="history-table" role="table" aria-label="Delivery history">
-            <thead>
-              <tr><th>From</th><th>To</th><th>Distance</th><th>Duration</th><th>Status</th><th>Action</th></tr>
-            </thead>
-            <tbody id="deliveryTableBody"></tbody>
-          </table>
-        </div>
-
-        <div class="actions" style="margin-top:10px">
-          <button id="clearAllBtn" style="background:#fff;border:1px solid #e6eefb;color:var(--accent)">🧹 Clear All</button>
-        </div>
+      <!-- History -->
+      <div id="history" class="section tab-content" style="display:none;">
+        <table class="history-table" style="width:100%;font-size:13px;">
+          <thead>
+            <tr><th>From</th><th>To</th><th>Distance</th><th>Duration</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="deliveryTableBody"></tbody>
+        </table>
+        <button id="clearAllBtn" style="margin-top:10px;width:100%;">🧹 Clear All</button>
       </div>
 
     </div>
-  </aside>
+  </div>
 
   <!-- MAP -->
   <div id="map" role="region" aria-label="Map"></div>
@@ -599,3 +669,4 @@
   </script>
 </body>
 </html>
+
