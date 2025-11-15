@@ -25,9 +25,10 @@
 
     body { display:flex; overflow:hidden; }
 
-    /* ===================================================
-       CLEANED SIDEBAR UI (NO CHANGES TO LOGO HEADER)
-    ===================================================*/
+    /* ===========================
+       SIDEBAR (clean) - Logo card unchanged
+       Includes checkbox UI fixes & focus styles
+       =========================== */
 
     #sidebar {
       width: 380px;
@@ -37,7 +38,6 @@
       padding: 22px;
       box-sizing: border-box;
       height: 100vh;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
       gap: 18px;
@@ -148,54 +148,95 @@
       box-sizing:border-box;
     }
 
-    /* ---------- Delivery List ---------- */
+    /* ---------- Delivery List (FIXED) ---------- */
     .checkbox-group {
       border:1px solid #dce3eb;
       border-radius:10px;
-      padding:12px;
+      padding:10px;
       background:#fafcff;
       max-height:170px;
       overflow-y:auto;
     }
 
-    .checkbox-group::-webkit-scrollbar {
-      width:6px;
+    /* general scrollbar polish */
+    .checkbox-group::-webkit-scrollbar,
+    .content::-webkit-scrollbar {
+      width:8px;
     }
-    .checkbox-group::-webkit-scrollbar-thumb {
-      background:#c8ccd4;
+    .checkbox-group::-webkit-scrollbar-thumb,
+    .content::-webkit-scrollbar-thumb {
+      background:#d0d4db;
       border-radius:10px;
     }
 
     .checkbox-grid {
       display:flex;
       flex-direction:column;
-      gap:8px;
+      gap:10px;
     }
 
+    /* Each checkbox row: left-aligned, checkbox next to text */
     .checkbox-grid label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.06);
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 13px;
-      cursor: pointer;
-      font-weight: 600;
-      justify-content: flex-start;  /* <— important */
-    }
-    
-    .checkbox-grid label input[type="checkbox"] {
-      transform: scale(1.2);
-      margin: 0;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius:8px;
+      padding:10px 12px;
+      font-size:13px;
+      cursor:pointer;
+      justify-content:flex-start; /* important */
     }
 
-    .checkbox-grid label span {
-      flex: 1;            /* <— makes text sit left beside checkbox */
-      text-align: left;
-      white-space: nowrap;
+    /* bigger, consistent checkboxes */
+    .checkbox-grid input[type="checkbox"] {
+      width:18px;
+      height:18px;
+      margin:0;
+      accent-color: var(--accent); /* modern browsers */
+      flex: 0 0 auto;
     }
+
+    /* label text sits immediately after the checkbox */
+    .checkbox-grid label .city-label {
+      flex:1;
+      text-align:left;
+      font-weight:600;
+      color:#16263b;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* special style for the "Select All" row: text at right */
+    .checkbox-grid .select-all-row {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:8px 10px;
+      background:transparent;
+      border-radius:6px;
+      border:none;
+    }
+    .checkbox-grid .select-all-row .city-label {
+      text-align:right;
+      font-weight:700;
+      color:#0f172a;
+    }
+
+    /* focus and hover polish */
+    .checkbox-grid label:focus-within,
+    .checkbox-grid label:hover {
+      box-shadow: 0 6px 18px rgba(10, 25, 60, 0.06);
+      transform: translateY(-1px);
+      transition: all 0.12s ease;
+    }
+
+    .checkbox-grid label:active { transform: translateY(0); }
+
+    /* remove ugly dark outline on focus for the label */
+    .checkbox-grid label:focus { outline: none; }
 
     /* ---------- Manual Search ---------- */
     .manual-row {
@@ -210,24 +251,27 @@
       color:#fff;
       border:none;
       cursor:pointer;
+      font-weight:600;
     }
 
     /* Action Buttons */
     .action-row {
       display:flex;
       gap:10px;
-      margin-top:10px;
+      margin-top:8px;
     }
 
     #showDeliveriesBtn {
       background:#0056b3;
       color:#fff;
       border:none;
-      font-weight:600;
+      font-weight:700;
     }
 
     #resetBtn {
-      font-weight:600;
+      font-weight:700;
+      background: transparent;
+      border: 1px solid #e6eaf0;
     }
 
     /* ---------- History Table ---------- */
@@ -237,14 +281,8 @@
       font-size:13px;
     }
 
-    th,td {
-      padding:8px 6px;
-      border-bottom:1px solid #e6eaf0;
-    }
-    th {
-      background:#f8fafc;
-      font-weight:700;
-    }
+    th,td { padding:8px 6px; border-bottom:1px solid #e6eaf0; }
+    th { background:#f8fafc; font-weight:700; }
 
     .remove-btn {
       background:#e63939;
@@ -270,10 +308,7 @@
       z-index:2000;
       font-weight:600;
     }
-    #successPopup.show {
-      opacity:1;
-      transform:translateY(0);
-    }
+    #successPopup.show { opacity:1; transform:translateY(0); }
 
     #loadingOverlay {
       position:fixed;
@@ -321,7 +356,7 @@
   <div class="header-card">
     <img src="Noma Logo (Registered).png" alt="NOMA Logo">
     <div class="header-text">
-      <h1>NOMA IntelliRoute<br>Console</h1>
+      <h2>NOMA <br>IntelliRoute</h2>
     </div>
   </div>
 
@@ -386,386 +421,369 @@
   </div>
 </div>
 
-  <!-- MAP -->
-  <div id="map" role="region" aria-label="Map"></div>
+<!-- MAP -->
+<div id="map" role="region" aria-label="Map"></div>
 
-  <!-- success + loading overlays -->
-  <div id="successPopup" aria-live="polite"></div>
-  <div id="loadingOverlay" aria-hidden="true">
-    <div class="loader" role="status" aria-label="Loading"></div>
-    <div id="loadingText">Loading... 0s</div>
-  </div>
+<!-- success + loading overlays -->
+<div id="successPopup" aria-live="polite"></div>
+<div id="loadingOverlay" aria-hidden="true">
+  <div class="loader" role="status" aria-label="Loading"></div>
+  <div id="loadingText">Loading... 0s</div>
+</div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-  /* ============================
-     App: combined final HTML + JS
-     Features implemented:
-     - Logo banner with side insets (10% left/right)
-     - Logo fixed 120px
-     - Delivery UI grid (A) with reduced height & scroll
-     - Uncheck behavior: remove route when checkbox is unchecked (Both)
-     - Multiple same delivery allowed across different stock points (stock|city unique)
-     - Route highlight without removing markers (keeps markers visible)
-     - Manual search add
-     - Responsive for mobile (sidebar top)
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+/* ============================
+  App JS — checkbox behavior fix:
+  - Checking only selects cities (no add)
+  - Show button draws all selected routes
+  - Uncheck removes already-drawn route
   ============================ */
 
-  const regionDeliveries = {
-    North: ["Alwar","Bareilly City","Baddi","Chandigarh","Gurugram","Hapur","Haridwar","Hoshiarpur","Jalandhar","Jammu","Kanpur","Kashipur","Loni, Gaziabad","Lucknow","Saharanpur","Solan","Yamunanagar","Azadpur"],
-    West: ["Ahmedabad","Ankleshwar","Dahej","Dombivli","Kandla, Gujarat","Khopoli","Lote","Mahad","Pune","Rajkot","Sabarkantha","Surat","Tarapur, Maharashtra","Vadodara","Valsad, Gujarat","Vapi, Gujarat"],
-    East: [], South: []
-  };
+/* ---------- Sample region deliveries ---------- */
+const regionDeliveries = {
+  North: ["Alwar","Bareilly City","Baddi","Chandigarh","Gurugram","Hapur","Haridwar","Hoshiarpur","Jalandhar","Jammu","Kanpur","Kashipur","Loni, Gaziabad","Lucknow","Saharanpur","Solan","Yamunanagar","Azadpur"],
+  West: ["Ahmedabad","Ankleshwar","Dahej","Dombivli","Kandla, Gujarat","Khopoli","Lote","Mahad","Pune","Rajkot","Sabarkantha","Surat","Tarapur, Maharashtra","Vadodara","Valsad, Gujarat","Vapi, Gujarat"],
+  East: [], South: []
+};
 
-  // DOM
-  const stockSelect = document.getElementById('stockSelect');
-  const regionSelect = document.getElementById('regionSelect');
-  const checkboxGrid = document.getElementById('checkboxGrid');
-  const manualInput = document.getElementById('manualInput');
-  const manualAddBtn = document.getElementById('manualAddBtn');
-  const showDeliveriesBtn = document.getElementById('showDeliveriesBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const clearAllBtn = document.getElementById('clearAllBtn');
-  const deliveryTableBody = document.getElementById('deliveryTableBody');
-  const railDistanceDiv = document.getElementById('railDistance');
-  const successPopup = document.getElementById('successPopup');
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const loadingText = document.getElementById('loadingText');
+/* ---------- DOM ---------- */
+const stockSelect = document.getElementById('stockSelect');
+const regionSelect = document.getElementById('regionSelect');
+const checkboxGrid = document.getElementById('checkboxGrid');
+const manualInput = document.getElementById('manualInput');
+const manualAddBtn = document.getElementById('manualAddBtn');
+const showDeliveriesBtn = document.getElementById('showDeliveriesBtn');
+const resetBtn = document.getElementById('resetBtn');
+const clearAllBtn = document.getElementById('clearAllBtn');
+const deliveryTableBody = document.getElementById('deliveryTableBody');
+const railDistanceDiv = document.getElementById('railDistance');
+const successPopup = document.getElementById('successPopup');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingText = document.getElementById('loadingText');
 
-  // map init
-  const map = L.map('map').setView([20.5937,78.9629],6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+/* ---------- map init ---------- */
+const map = L.map('map').setView([20.5937,78.9629],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+function markerIcon(color){
+  return L.divIcon({
+    className:'custom-marker',
+    html:`<div style="width:18px;height:18px;background:${color};border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(10,20,40,0.12)"></div>`,
+    iconSize:[18,18],iconAnchor:[9,9]
+  });
+}
 
-  function markerIcon(color){
-    return L.divIcon({
-      className:'custom-marker',
-      html:`<div style="width:18px;height:18px;background:${color};border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(10,20,40,0.12)"></div>`,
-      iconSize:[18,18],iconAnchor:[9,9]
+/* origin sample */
+const origin = [22.0667,88.1145];
+L.marker(origin,{icon:markerIcon('#d9534f')}).addTo(map).bindPopup('Haldia Petrochemicals, WB');
+
+/* ---------- state ---------- */
+let stockData = {};
+let currentStock = null;
+let stockMarker = null;
+let railRouteLine = null;
+let deliveryLayers = {}; // key = stockKey|city -> {line, marker}
+let addedDeliveries = new Set(); // keys shown on map
+
+/* ---------- UI helpers ---------- */
+function showLoading(){ loadingOverlay.style.display = 'flex'; loadingOverlay.setAttribute('aria-hidden','false'); }
+function hideLoading(){ loadingOverlay.style.display = 'none'; loadingOverlay.setAttribute('aria-hidden','true'); }
+function showSuccess(text='Completed'){ successPopup.textContent = '✅ ' + text; successPopup.classList.add('show'); setTimeout(()=>successPopup.classList.remove('show'),2000); }
+
+/* ---------- loadRoutes (keeps same contract your backend expects) ---------- */
+async function loadRoutes(){
+  try{
+    const r = await fetch('/routes');
+    stockData = await r.json();
+    stockSelect.innerHTML = '';
+    Object.keys(stockData).forEach(key=>{
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = stockData[key].name;
+      stockSelect.appendChild(opt);
     });
+    const first = Object.keys(stockData)[0];
+    if(first) setStockPoint(first);
+  }catch(err){
+    console.error('Failed load routes', err);
+    // fallback: create a default
+    stockData = { default: { name: 'Default Stock', coords: [17.3850,78.4867], route: [] } };
+    const opt = document.createElement('option'); opt.value = 'default'; opt.textContent = 'Default Stock';
+    stockSelect.appendChild(opt);
+    setStockPoint('default');
   }
+}
 
-  const origin = [22.0667,88.1145];
-  L.marker(origin,{icon:markerIcon('#d9534f')}).addTo(map).bindPopup('Haldia Petrochemicals, WB');
+function setStockPoint(key){
+  if(!stockData[key]) return;
+  currentStock = stockData[key];
+  if(stockMarker) map.removeLayer(stockMarker);
+  stockMarker = L.marker(currentStock.coords,{icon:markerIcon('#228B22')}).addTo(map).bindPopup(currentStock.name);
+  map.setView(currentStock.coords,7);
+  drawRailRoute(key);
+}
+stockSelect.addEventListener('change', e => setStockPoint(e.target.value));
 
-  // state
-  let stockData = {};
-  let currentStock = null;
-  let stockMarker = null;
-  let railRouteLine = null;
-  let deliveryLayers = {}; // key=stockKey|city -> {line, marker, row}
-  let addedDeliveries = new Set(); // stockKey|city
+function drawRailRoute(key){
+  if(railRouteLine) map.removeLayer(railRouteLine);
+  const route = stockData[key]?.route;
+  if(!route){ railDistanceDiv.innerHTML = '📏 Rail Route Distance: —'; return; }
+  let total=0;
+  for(let i=1;i<route.length;i++) total += map.distance(route[i-1], route[i]);
+  railDistanceDiv.innerHTML = `📏 Rail Route Distance: ${(total/1000).toFixed(1)} km`;
+  railRouteLine = L.polyline(route,{color:'#1b9b53',dashArray:'6,6',weight:3}).addTo(map);
+}
 
-  // loading helpers
-  function showLoading(){ loadingOverlay.style.display = 'flex'; loadingOverlay.setAttribute('aria-hidden','false'); }
-  function hideLoading(){ loadingOverlay.style.display = 'none'; loadingOverlay.setAttribute('aria-hidden','true'); }
-  function showSuccess(text='Completed'){ successPopup.textContent = '✅ ' + text; successPopup.classList.add('show'); setTimeout(()=>successPopup.classList.remove('show'),2000); }
+/* ---------- Populate locations (checkbox UI) ---------- */
+function populateLocations(region){
+  checkboxGrid.innerHTML = '';
 
-  // load routes (backend /routes)
-  async function loadRoutes(){
-    try{
-      const r = await fetch('/routes');
-      stockData = await r.json();
-      stockSelect.innerHTML = '';
-      Object.keys(stockData).forEach(key=>{
-        const opt = document.createElement('option');
-        opt.value = key;
-        opt.textContent = stockData[key].name;
-        stockSelect.appendChild(opt);
-      });
-      const first = Object.keys(stockData)[0];
-      if(first) setStockPoint(first);
-    }catch(err){
-      console.error('Failed load routes', err);
-      alert('Failed to load Routes.json');
-    }
-  }
+  // Select All row (right aligned text like your screenshot)
+  const topRow = document.createElement('label');
+  topRow.className = 'select-all-row';
+  topRow.innerHTML = `<input type="checkbox" id="selectAll"> <span class="city-label">Select All</span>`;
+  checkboxGrid.appendChild(topRow);
 
-  function setStockPoint(key){
-    if(!stockData[key]) return;
-    currentStock = stockData[key];
-    if(stockMarker) map.removeLayer(stockMarker);
-    stockMarker = L.marker(currentStock.coords,{icon:markerIcon('#228B22')}).addTo(map).bindPopup(currentStock.name);
-    map.setView(currentStock.coords,7);
-    drawRailRoute(key);
-  }
-  stockSelect.addEventListener('change', e => setStockPoint(e.target.value));
+  regionDeliveries[region].forEach(city=>{
+    const lab = document.createElement('label');
+    lab.innerHTML = `<input type="checkbox" value="${city}"> <span class="city-label">${city}</span>`;
+    checkboxGrid.appendChild(lab);
+  });
 
-  function drawRailRoute(key){
-    if(railRouteLine) map.removeLayer(railRouteLine);
-    const route = stockData[key]?.route;
-    if(!route){ railDistanceDiv.innerHTML = '📏 Rail Route Distance: —'; return; }
-    let total=0;
-    for(let i=1;i<route.length;i++) total += map.distance(route[i-1], route[i]);
-    railDistanceDiv.innerHTML = `📏 Rail Route Distance: ${(total/1000).toFixed(1)} km`;
-    railRouteLine = L.polyline(route,{color:'#1b9b53',dashArray:'6,6',weight:3}).addTo(map);
-  }
-
-  // populate checkboxes (grid A). Reduced height & scroll handled by CSS
-  function populateLocations(region){
-    checkboxGrid.innerHTML = '';
-    // select-all label spanning full width
-    const topLabel = document.createElement('label');
-    topLabel.style.minWidth = '100%';
-    topLabel.style.border = 'none';
-    topLabel.innerHTML = `<input type="checkbox" id="selectAll"> <strong style="margin-left:8px">Select All</strong>`;
-    checkboxGrid.appendChild(topLabel);
-
-    regionDeliveries[region].forEach(city=>{
-      const lab = document.createElement('label');
-      lab.innerHTML = `<input type="checkbox" value="${city}"> <span style="flex:1">${city}</span>`;
-      checkboxGrid.appendChild(lab);
-    });
-
-    const selAll = document.getElementById('selectAll');
-    if(selAll){
-      selAll.addEventListener('change', e=>{
-        checkboxGrid.querySelectorAll('input[type="checkbox"]:not(#selectAll)').forEach(cb=>{
-          // if checking -> add route; if unchecking -> remove route
-          if(e.target.checked && !cb.checked){
-            cb.checked = true;
-            cb.dispatchEvent(new Event('change', { bubbles:true }));
-          } else if(!e.target.checked && cb.checked){
-            cb.checked = false;
-            cb.dispatchEvent(new Event('change', { bubbles:true }));
-          } else {
-            cb.checked = e.target.checked;
-            cb.dispatchEvent(new Event('change', { bubbles:true }));
-          }
-        });
-      });
-    }
-
-    // attach change handler per checkbox to add/remove on toggle
-    checkboxGrid.querySelectorAll('input[type="checkbox"]:not(#selectAll)').forEach(cb=>{
-      cb.addEventListener('change', async (ev)=>{
-        const city = ev.target.value;
-        if(ev.target.checked){
-          await addDelivery(city);
-        } else {
-          removeDeliveryByCheckbox(city);
-        }
+  const selAll = document.getElementById('selectAll');
+  if(selAll){
+    selAll.addEventListener('change', e=>{
+      const checked = e.target.checked;
+      // toggle all checkboxes only (do not add routes)
+      checkboxGrid.querySelectorAll('input[type="checkbox"]:not(#selectAll)').forEach(cb=>{
+        cb.checked = checked;
       });
     });
   }
 
-  regionSelect.addEventListener('change', e => populateLocations(e.target.value));
+  // IMPORTANT: only remove on uncheck. Do NOT auto-add on check.
+  checkboxGrid.querySelectorAll('input[type="checkbox"]:not(#selectAll)').forEach(cb=>{
+    cb.addEventListener('change', (ev)=>{
+      const city = ev.target.value;
+      if(!ev.target.checked){
+        // Unchecking removes route if it was already drawn (for current stock)
+        removeDeliveryByCheckbox(city);
+      }
+    });
+  });
+}
+regionSelect.addEventListener('change', e => populateLocations(e.target.value));
 
-  // backend geocode proxy
-  async function geocodeORS(city){
-    try{
-      const r = await fetch(`/geocode?query=${encodeURIComponent(city)}`);
-      if(!r.ok) return null;
-      const j = await r.json();
-      if(!j.features || !j.features.length) return null;
-      const f = j.features[0];
-      return [ f.geometry.coordinates[1], f.geometry.coordinates[0], f.properties.label || city ];
-    }catch(e){
-      console.error('geocode error', e);
-      return null;
-    }
+/* ---------- Geocode proxy to backend (unchanged) ---------- */
+async function geocodeORS(city){
+  try{
+    const r = await fetch(`/geocode?query=${encodeURIComponent(city)}`);
+    if(!r.ok) return null;
+    const j = await r.json();
+    if(!j.features || !j.features.length) return null;
+    const f = j.features[0];
+    return [ f.geometry.coordinates[1], f.geometry.coordinates[0], f.properties.label || city ];
+  }catch(e){
+    console.error('geocode error', e);
+    return null;
+  }
+}
+
+/* ---------- addDelivery (unchanged logic) ---------- */
+async function addDelivery(city){
+  if(!currentStock){ alert('Select a stock point first'); return; }
+  const stockKey = stockSelect.value;
+  const uniqueKey = `${stockKey}|${city}`;
+
+  if(addedDeliveries.has(uniqueKey)){
+    // already drawn for this stock
+    return;
   }
 
-  // addDelivery: prevents duplicates for same stock; allows same city on different stock
-  async function addDelivery(city){
-    if(!currentStock){ alert('Select a stock point first'); return; }
-    const stockKey = stockSelect.value;
-    const uniqueKey = `${stockKey}|${city}`;
+  // geocode
+  showLoading();
+  const geo = await geocodeORS(city);
+  hideLoading();
+  if(!geo){ alert('Could not geocode: ' + city); return; }
+  const [lat, lon, label] = geo;
 
-    if(addedDeliveries.has(uniqueKey)){
-      console.log('Already added for this stock:', uniqueKey);
-      return;
-    }
-
-    // geocode
-    showLoading();
-    const geo = await geocodeORS(city);
+  // route call to backend
+  const url = `/route?start_lat=${currentStock.coords[0]}&start_lng=${currentStock.coords[1]}&end_lat=${lat}&end_lng=${lon}`;
+  showLoading();
+  let routeJson;
+  try{
+    const r = await fetch(url);
+    if(!r.ok){ throw new Error('Route request failed ' + r.status); }
+    routeJson = await r.json();
+  }catch(err){
+    console.error('route error', err);
     hideLoading();
-    if(!geo){ alert('Could not geocode: ' + city); return; }
-    const [lat, lon, label] = geo;
+    return alert('Routing failed for ' + city);
+  }
+  hideLoading();
 
-    // route call
-    const url = `/route?start_lat=${currentStock.coords[0]}&start_lng=${currentStock.coords[1]}&end_lat=${lat}&end_lng=${lon}`;
-    showLoading();
-    let routeJson;
-    try{
-      const r = await fetch(url);
-      if(!r.ok){ throw new Error('Route request failed ' + r.status); }
-      routeJson = await r.json();
-    }catch(err){
-      console.error('route error', err);
-      hideLoading();
-      return alert('Routing failed for ' + city);
-    }
-    hideLoading();
+  if(!routeJson.features || !routeJson.features.length){ alert('No route found for ' + city); return; }
 
-    if(!routeJson.features || !routeJson.features.length){ alert('No route found for ' + city); return; }
+  const coords = routeJson.features[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+  const seg = routeJson.features[0].properties.segments[0];
+  const dist = (seg.distance/1000).toFixed(2);
+  const hrs = Math.floor(seg.duration/3600);
+  const mins = Math.round(((seg.duration/3600)-hrs)*60);
+  const time = `${hrs}h ${mins}m`;
 
-    const coords = routeJson.features[0].geometry.coordinates.map(c=>[c[1],c[0]]);
-    const seg = routeJson.features[0].properties.segments[0];
-    const dist = (seg.distance/1000).toFixed(2);
-    const hrs = Math.floor(seg.duration/3600);
-    const mins = Math.round(((seg.duration/3600)-hrs)*60);
-    const time = `${hrs}h ${mins}m`;
+  // draw
+  const line = L.polyline(coords, { color:'#2b6be6', weight:3 }).addTo(map);
+  const marker = L.marker([lat,lon], { icon: markerIcon('#007bff') }).addTo(map).bindPopup(`<b>${label}</b><br>${dist} km<br>${time}`);
 
-    // draw
-    const line = L.polyline(coords, { color:'#2b6be6', weight:3 }).addTo(map);
-    const marker = L.marker([lat,lon], { icon: markerIcon('#007bff') }).addTo(map).bindPopup(`<b>${label}</b><br>${dist} km<br>${time}`);
+  // keep markers visually on top using z-index offsets during highlight (no removal of marker icon)
+  marker.setZIndexOffset(0);
+  if(stockMarker) stockMarker.setZIndexOffset(0);
 
-    // keep markers visually on top using z-index offsets during highlight (no removal of marker icon)
+  // store
+  deliveryLayers[uniqueKey] = { line, marker };
+  addedDeliveries.add(uniqueKey);
+
+  // add table row & keep mapping
+  const row = document.createElement('tr');
+  row.innerHTML = `<td style="min-width:140px">${currentStock.name}</td><td>${city}</td><td>${dist} km</td><td>${time}</td><td>✔</td><td><button class="remove-btn">×</button></td>`;
+  deliveryTableBody.prepend(row);
+
+  // highlight on hover
+  row.addEventListener('mouseenter', ()=>{
+    line.setStyle({ color:'#000', weight:6, opacity:0.98 });
+    line.bringToFront();
+    marker.setZIndexOffset(2000);
+    if(marker._icon){ marker._icon.style.transform='scale(1.35)'; marker._icon.style.filter='drop-shadow(0 0 12px rgba(0,0,0,0.6))'; }
+    if(stockMarker && stockMarker._icon){ stockMarker.setZIndexOffset(1500); stockMarker._icon.style.transform='scale(1.25)'; stockMarker._icon.style.filter='drop-shadow(0 0 10px rgba(0,0,0,0.35))'; }
+  });
+  row.addEventListener('mouseleave', ()=>{
+    line.setStyle({ color:'#2b6be6', weight:3, opacity:1 });
     marker.setZIndexOffset(0);
-    if(stockMarker) stockMarker.setZIndexOffset(0);
+    if(marker._icon){ marker._icon.style.transform='scale(1)'; marker._icon.style.filter=''; }
+    if(stockMarker && stockMarker._icon){ stockMarker.setZIndexOffset(0); stockMarker._icon.style.transform='scale(1)'; stockMarker._icon.style.filter=''; }
+  });
 
-    // store
-    deliveryLayers[uniqueKey] = { line, marker };
-    addedDeliveries.add(uniqueKey);
+  // remove button handler
+  row.querySelector('.remove-btn').addEventListener('click', ()=>{
+    removeDelivery(uniqueKey);
+    // also uncheck checkbox UI if present
+    uncheckCheckboxForCity(city);
+    row.remove();
+  });
 
-    // add table row & keep mapping
-    const row = document.createElement('tr');
-    row.innerHTML = `<td style="min-width:140px">${currentStock.name}</td><td>${city}</td><td>${dist} km</td><td>${time}</td><td>✔</td><td><button class="remove-btn">×</button></td>`;
-    deliveryTableBody.prepend(row);
-
-    // attach highlight (bringToFront + scale) — markers remain present
-    row.addEventListener('mouseenter', ()=>{
-      line.setStyle({ color:'#000', weight:6, opacity:0.98 });
-      line.bringToFront();
-      marker.setZIndexOffset(2000);
-      if(marker._icon){ marker._icon.style.transform='scale(1.35)'; marker._icon.style.filter='drop-shadow(0 0 12px rgba(0,0,0,0.6))'; }
-      if(stockMarker && stockMarker._icon){ stockMarker.setZIndexOffset(1500); stockMarker._icon.style.transform='scale(1.25)'; stockMarker._icon.style.filter='drop-shadow(0 0 10px rgba(0,0,0,0.35))'; }
-    });
-    row.addEventListener('mouseleave', ()=>{
-      line.setStyle({ color:'#2b6be6', weight:3, opacity:1 });
-      marker.setZIndexOffset(0);
-      if(marker._icon){ marker._icon.style.transform='scale(1)'; marker._icon.style.filter=''; }
-      if(stockMarker && stockMarker._icon){ stockMarker.setZIndexOffset(0); stockMarker._icon.style.transform='scale(1)'; stockMarker._icon.style.filter=''; }
-    });
-
-    // remove button handler
-    row.querySelector('.remove-btn').addEventListener('click', ()=>{
-      removeDelivery(uniqueKey);
-      // also uncheck checkbox UI if present
-      uncheckCheckboxForCity(city);
-      row.remove();
-    });
-
-    // if a checkbox for this city exists and is unchecked we should check it (optional UX: sync state)
-    // find checkbox and set checked true (but avoid double-adding because addDelivery checks set)
-    const cb = checkboxGrid.querySelector(`input[type="checkbox"][value="${CSS.escape(city)}"]`);
-    if(cb && !cb.checked){
-      cb.checked = true;
-    }
-
-    showSuccess(city + ' added');
+  // sync checkbox state: if checkbox exists and isn't checked, check it (optional)
+  const cb = checkboxGrid.querySelector(`input[type="checkbox"][value="${CSS.escape(city)}"]`);
+  if(cb && !cb.checked){
+    cb.checked = true;
   }
 
-  // remove delivery by unique key (stockKey|city)
-  function removeDelivery(uniqueKey){
-    const item = deliveryLayers[uniqueKey];
-    if(!item) return;
-    if(item.line) map.removeLayer(item.line);
-    if(item.marker) map.removeLayer(item.marker);
-    delete deliveryLayers[uniqueKey];
-    addedDeliveries.delete(uniqueKey);
-    // remove row in table if exists
-    const rows = Array.from(deliveryTableBody.querySelectorAll('tr'));
-    for(const r of rows){
-      if(r.cells && r.cells[1] && r.cells[1].textContent.trim()){
-        const city = r.cells[1].textContent.trim();
-        const stock = r.cells[0].textContent.trim();
-        if(`${stockSelect.value}|${city}` === uniqueKey || `${stock}|${city}` === uniqueKey){
-          r.remove();
-          break;
-        }
+  showSuccess(city + ' added');
+}
+
+/* ---------- removeDelivery helpers ---------- */
+function removeDelivery(uniqueKey){
+  const item = deliveryLayers[uniqueKey];
+  if(!item) return;
+  if(item.line) map.removeLayer(item.line);
+  if(item.marker) map.removeLayer(item.marker);
+  delete deliveryLayers[uniqueKey];
+  addedDeliveries.delete(uniqueKey);
+
+  // remove row in table if exists
+  const rows = Array.from(deliveryTableBody.querySelectorAll('tr'));
+  for(const r of rows){
+    if(r.cells && r.cells[1] && r.cells[1].textContent.trim()){
+      const city = r.cells[1].textContent.trim();
+      const stock = r.cells[0].textContent.trim();
+      if(`${stockSelect.value}|${city}` === uniqueKey || `${stock}|${city}` === uniqueKey){
+        r.remove();
+        break;
       }
     }
   }
+}
 
-  // remove when checkbox is unchecked: find the unique key(s) for current stock
-  function removeDeliveryByCheckbox(city){
-    const stockKey = stockSelect.value;
-    const uniqueKey = `${stockKey}|${city}`;
-    // ensure we remove only that stock|city
-    if(addedDeliveries.has(uniqueKey)){
-      removeDelivery(uniqueKey);
-    }
+function removeDeliveryByCheckbox(city){
+  const stockKey = stockSelect.value;
+  const uniqueKey = `${stockKey}|${city}`;
+  if(addedDeliveries.has(uniqueKey)){
+    removeDelivery(uniqueKey);
+  }
+}
+
+function uncheckCheckboxForCity(city){
+  const cb = checkboxGrid.querySelector(`input[type="checkbox"][value="${CSS.escape(city)}"]`);
+  if(cb) cb.checked = false;
+}
+
+/* ---------- Manual add handlers ---------- */
+manualAddBtn.addEventListener('click', async ()=>{
+  const txt = manualInput.value.trim();
+  if(!txt) return alert('Enter a location');
+  manualInput.value = '';
+  await addDelivery(txt);
+});
+manualInput.addEventListener('keypress', e=>{ if(e.key==='Enter') manualAddBtn.click(); });
+
+/* ---------- Bulk add selected (Show button) ---------- */
+async function showSelectedDeliveries(){
+  const checked = Array.from(checkboxGrid.querySelectorAll('input[type="checkbox"]:checked:not(#selectAll)')).map(cb=>cb.value);
+  if(!checked.length) return alert('Select at least one location');
+  showLoading();
+  let seconds = 0;
+  const t = setInterval(()=>{ seconds++; loadingText.textContent = `Loading... ${seconds}s`; }, 1000);
+
+  for(let i=0;i<checked.length;i++){
+    const pct = Math.round(((i+1)/checked.length)*100);
+    loadingText.textContent = `Loading ${i+1} of ${checked.length} (${pct}%) • ${seconds}s`;
+    await addDelivery(checked[i]);
   }
 
-  // helper to uncheck checkbox for a city in the UI (used when row removed)
-  function uncheckCheckboxForCity(city){
-    const cb = checkboxGrid.querySelector(`input[type="checkbox"][value="${CSS.escape(city)}"]`);
-    if(cb) cb.checked = false;
-  }
+  clearInterval(t);
+  hideLoading();
+  showSuccess('Deliveries added');
+}
+showDeliveriesBtn.addEventListener('click', showSelectedDeliveries);
 
-  // manual add handlers
-  manualAddBtn.addEventListener('click', async ()=>{
-    const txt = manualInput.value.trim();
-    if(!txt) return alert('Enter a location');
-    manualInput.value = '';
-    await addDelivery(txt);
-  });
-  manualInput.addEventListener('keypress', e=>{ if(e.key==='Enter') manualAddBtn.click(); });
+/* ---------- clear all ---------- */
+clearAllBtn.addEventListener('click', ()=>{
+  Object.values(deliveryLayers).forEach(v=>{ if(v.line) map.removeLayer(v.line); if(v.marker) map.removeLayer(v.marker); });
+  deliveryLayers = {};
+  addedDeliveries.clear();
+  deliveryTableBody.innerHTML = '';
+  // uncheck all checkboxes
+  checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked = false);
+});
 
-  // bulk add selected (sequential with loading & progress)
-  async function showSelectedDeliveries(){
-    const checked = Array.from(checkboxGrid.querySelectorAll('input[type="checkbox"]:checked:not(#selectAll)')).map(cb=>cb.value);
-    if(!checked.length) return alert('Select at least one location');
-    showLoading();
-    let seconds = 0;
-    const t = setInterval(()=>{ seconds++; loadingText.textContent = `Loading... ${seconds}s`; }, 1000);
-
-    for(let i=0;i<checked.length;i++){
-      const pct = Math.round(((i+1)/checked.length)*100);
-      loadingText.textContent = `Loading ${i+1} of ${checked.length} (${pct}%) • ${seconds}s`;
-      await addDelivery(checked[i]);
-    }
-
-    clearInterval(t);
-    hideLoading();
-    showSuccess('Deliveries added');
-  }
-  showDeliveriesBtn.addEventListener('click', showSelectedDeliveries);
-
-  // clear all
-  clearAllBtn.addEventListener('click', ()=>{
-    Object.values(deliveryLayers).forEach(v=>{ if(v.line) map.removeLayer(v.line); if(v.marker) map.removeLayer(v.marker); });
-    deliveryLayers = {};
-    addedDeliveries.clear();
-    deliveryTableBody.innerHTML = '';
-    // uncheck all checkboxes
-    checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked = false);
-  });
-
-  // reset (clear + reset UI + map view)
-  resetBtn.addEventListener('click', ()=>{
-    clearAllBtn.click();
-    if(railRouteLine){ map.removeLayer(railRouteLine); railRouteLine = null; }
-    if(stockMarker){ map.removeLayer(stockMarker); stockMarker = null; }
-    railDistanceDiv.innerHTML = '📏 Rail Route Distance: —';
-    regionSelect.value = 'North';
-    populateLocations('North');
-    const first = Object.keys(stockData)[0];
-    if(first){ stockSelect.value = first; setStockPoint(first); }
-    map.setView([20.5937,78.9629],6);
-  });
-
-  // tabs
-  document.querySelectorAll('.tab').forEach(tab=>{
-    tab.addEventListener('click', ()=>{
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
-      tab.classList.add('active');
-      const id = tab.dataset.tab;
-      document.getElementById(id).style.display = 'block';
-    });
-  });
-
-  // init
+/* ---------- reset ---------- */
+resetBtn.addEventListener('click', ()=>{
+  clearAllBtn.click();
+  if(railRouteLine){ map.removeLayer(railRouteLine); railRouteLine = null; }
+  if(stockMarker){ map.removeLayer(stockMarker); stockMarker = null; }
+  railDistanceDiv.innerHTML = '📏 Rail Route Distance: —';
+  regionSelect.value = 'North';
   populateLocations('North');
-  loadRoutes();
+  const first = Object.keys(stockData)[0];
+  if(first){ stockSelect.value = first; setStockPoint(first); }
+  map.setView([20.5937,78.9629],6);
+});
 
-  </script>
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+    tab.classList.add('active');
+    const id = tab.dataset.tab;
+    document.getElementById(id).style.display = 'block';
+  });
+});
+
+/* ---------- init ---------- */
+populateLocations('North');
+loadRoutes();
+
+</script>
 </body>
 </html>
-
-
-
-
