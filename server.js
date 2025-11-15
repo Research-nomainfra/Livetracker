@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // ORS key
-const ORS_API_KEY = "YOUR_ORS_KEY_HERE";
+const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjExMTlhNjU3YzJhNzRlZmE5MjI2N2VjZGM1YTQzNGFjIiwiaCI6Im11cm11cjY0In0=";
 
 // Round for ORS compatibility
 const round6 = (n) => Number(parseFloat(n).toFixed(6));
@@ -80,3 +80,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on Render at port ${PORT}`);
   console.log("===========================================\n");
 });
+
