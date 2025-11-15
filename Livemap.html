@@ -315,7 +315,7 @@
     let stockData = {}, currentStock = null, deliveryMap = {}, railRouteLine = null, stockMarker = null;
 
     async function loadRoutes() {
-      const res = await fetch("/routes");
+      const res = await fetch("/Routes");
       stockData = await res.json();
       Object.keys(stockData).forEach((key) => {
         const opt = document.createElement("option");
@@ -337,7 +337,7 @@
 
     function drawRailRoute(stockKey) {
       if (railRouteLine) map.removeLayer(railRouteLine);
-      const routeCoords = stockData[stockKey].route;
+      const routeCoords = stockData[stockKey].Route;
       if (!routeCoords) return;
       let total = 0;
       for (let i = 1; i < routeCoords.length; i++)
@@ -402,7 +402,7 @@
       const dest = [lat, lon];
       const fromName = currentStock?.name || "Unknown Origin";
 
-      const url = `/route?start_lat=${currentStock.coords[0]}&start_lng=${currentStock.coords[1]}&end_lat=${lat}&end_lng=${lon}`;
+      const url = `/Route?start_lat=${currentStock.coords[0]}&start_lng=${currentStock.coords[1]}&end_lat=${lat}&end_lng=${lon}`;
       const res = await fetch(url);
       if (!res.ok) return null;
       const data = await res.json();
@@ -541,3 +541,4 @@
   </script>
 </body>
 </html>
+
