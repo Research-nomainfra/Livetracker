@@ -173,15 +173,28 @@
     }
 
     .checkbox-grid label {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      background:#fff;
-      border:1px solid rgba(0,0,0,0.06);
-      border-radius:8px;
-      padding:8px;
-      font-size:13px;
-      cursor:pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+      justify-content: flex-start;  /* <— important */
+    }
+    
+    .checkbox-grid label input[type="checkbox"] {
+      transform: scale(1.2);
+      margin: 0;
+    }
+
+    .checkbox-grid label span {
+      flex: 1;            /* <— makes text sit left beside checkbox */
+      text-align: left;
+      white-space: nowrap;
     }
 
     /* ---------- Manual Search ---------- */
@@ -752,6 +765,7 @@
   </script>
 </body>
 </html>
+
 
 
 
