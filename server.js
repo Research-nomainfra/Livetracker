@@ -3,30 +3,23 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
-
-// node-fetch workaround for CommonJS environment on Render
 const fetch = (...args) =>
   import("node-fetch").then(({ default: f }) => f(...args));
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Serve frontend files
 app.use(express.static(__dirname));
 
-/* ----------------------------------------------------------------
-   CONFIG
-------------------------------------------------------------------*/
-const ORS_API_KEY =
-  "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjExMTlhNjU3YzJhNzRlZmE5MjI2N2VjZGM1YTQzNGFjIiwiaCI6Im11cm11cjY0In0=";
+// ORS key
+const ORS_API_KEY = "YOUR_ORS_KEY_HERE";
 
-// Round coordinates to 6 decimal places (ORS requires this)
-const round6 = (num) => Number(parseFloat(num).toFixed(6));
+// Round for ORS compatibility
+const round6 = (n) => Number(parseFloat(n).toFixed(6));
 
-/* ----------------------------------------------------------------
-   GET STOCK ROUTES (data/Routes.json)
-------------------------------------------------------------------*/
+/* ----------------------------------------------------------
+   LOAD STOCK POINT ROUTES (Haldia → Stock Points)
+---------------------------------------------------------- */
 app.get("/routes", (req, res) => {
   try {
     const file = path.join(__dirname, "data", "Routes.json");
@@ -34,71 +27,56 @@ app.get("/routes", (req, res) => {
     res.json(JSON.parse(json));
   } catch (err) {
     console.error("❌ Failed to load Routes.json", err);
-    res.status(500).json({ error: "Failed to load routes file" });
+    res.status(500).json({ error: "Unable to load file" });
   }
 });
 
-/* ----------------------------------------------------------------
-   GET ROUTE FROM ORS (lng,lat → required format)
-------------------------------------------------------------------*/
+/* ----------------------------------------------------------
+   ORS ROUTING (Directions API)
+---------------------------------------------------------- */
 app.get("/route", async (req, res) => {
   let { start_lat, start_lng, end_lat, end_lng } = req.query;
 
-  // Validate presence
   if (!start_lat || !start_lng || !end_lat || !end_lng) {
     return res.status(400).json({ error: "Missing coordinates" });
   }
 
-  // Round to 6 decimals
   start_lat = round6(start_lat);
   start_lng = round6(start_lng);
   end_lat = round6(end_lat);
   end_lng = round6(end_lng);
 
-  // ORS format: start = LON, LAT
-  const orsURL =
-    `https://api.openrouteservice.org/v2/directions/driving-car?` +
+  const orsURL = `https://api.openrouteservice.org/v2/directions/driving-car?` +
     `api_key=${ORS_API_KEY}` +
-    `&start=${start_lng},${start_lat}` +
+    `&start=${start_lng},${start_lat}` +  // lon, lat
     `&end=${end_lng},${end_lat}`;
 
-  console.log("\n-----------------------------------------");
-  console.log("📡 ORS REQUEST →", orsURL);
+  console.log("📡 ORS:", orsURL);
 
   try {
-    const response = await fetch(orsURL);
-
-    if (!response.ok) {
-      console.error("❌ ORS FAILED:", response.status);
-      throw new Error(`ORS HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("✅ ORS success");
+    const r = await fetch(orsURL);
+    if (!r.ok) throw new Error(`ORS HTTP ${r.status}`);
+    const data = await r.json();
     res.json(data);
   } catch (err) {
-    console.error("❌ ORS fetch failed:", err);
-    res.status(500).json({
-      error: "ORS request failed",
-      details: err.message,
-    });
+    console.error("❌ ORS fetch failed:", err.message);
+    res.status(500).json({ error: "ORS failure", details: err.message });
   }
 });
 
-/* ----------------------------------------------------------------
-   SERVE MAIN HTML FILE
-------------------------------------------------------------------*/
+/* ----------------------------------------------------------
+   MAIN HTML FILE
+---------------------------------------------------------- */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "Livemap.html"));
 });
 
-/* ----------------------------------------------------------------
+/* ----------------------------------------------------------
    START SERVER
-------------------------------------------------------------------*/
-const PORT = process.env.PORT || 10000; // Render uses 10000 inside container
+---------------------------------------------------------- */
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log("=========================================");
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log("🌐 Ready on Render!");
-  console.log("=========================================\n");
+  console.log("===========================================");
+  console.log(`🚀 Server running on Render at port ${PORT}`);
+  console.log("===========================================\n");
 });
