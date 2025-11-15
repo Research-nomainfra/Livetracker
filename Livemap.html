@@ -3,22 +3,38 @@
 <head>
   <meta charset="utf-8" />
   <title>HPCL Live Delivery Tracker</title>
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
   <style>
     html, body {
-      margin: 0; padding: 0;
-      height: 100%; width: 100%;
-      overflow: hidden;
-      font-family: "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      display: flex;
-      background: #fff;
+    display: flex;
+    background: #fff; /* cleaner white layout */
+    box-sizing: border-box;
     }
 
+    #sidebar {
+    flex: 0 0 340px; /* exact fixed width */
+    background: #ffffff;
+    border-right: 1px solid #e0e0e0;
+    height: 100vh;
+    overflow-y: auto;
+    }
+
+    #map {
+    flex: 1;
+    height: 100vh;
+    width: 100%;
+    }
+
+    /* Sidebar */
     #sidebar {
       width: 360px;
       background: #ffffff;
@@ -42,11 +58,13 @@
     label {
       font-weight: 600;
       font-size: 13px;
+      color: #222;
       margin-top: 5px;
       display: block;
     }
 
-    select, button {
+    select,
+    button {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
@@ -62,13 +80,20 @@
       color: white;
       border: none;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
 
+    button:hover {
+      background-color: #00408a;
+    }
+
+    /* Map */
     #map {
       flex: 1;
       height: 100vh;
     }
 
+    /* Checkbox container */
     .checkbox-group {
       background: #f9fafb;
       border: 1px solid #ddd;
@@ -78,6 +103,58 @@
       overflow-y: auto;
     }
 
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+
+    /* Delivery History Table */
+    .tab-content {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: 8px;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    .remove-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .remove-btn:hover {
+      background: #c0392b;
+    }
+
+    /* Tabs */
     .tab-container {
       display: flex;
       gap: 6px;
@@ -90,6 +167,7 @@
       border-radius: 8px;
       background: #e9ecef;
       cursor: pointer;
+      font-size: 13px;
       font-weight: 600;
     }
 
@@ -98,29 +176,35 @@
       color: #fff;
     }
 
-    .tab-content {
-      display: none;
-      flex: 1;
+    /* Scrollbar */
+    #sidebar::-webkit-scrollbar {
+      width: 6px;
     }
 
-    .tab-content.active {
-      display: block;
+    #sidebar::-webkit-scrollbar-thumb {
+      background: #c7c7c7;
+      border-radius: 10px;
     }
 
+    /* Success Popup */
     #successPopup {
       position: fixed;
-      top: 50%; left: 50%;
-      padding: 16px 28px;
-      transform: translate(-50%, -50%) scale(0.8);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
       background: #e7f9ec;
       color: #256029;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 16px 28px;
       border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+      z-index: 10000;
       opacity: 0;
-      transition: 0.4s;
+      transition: all 0.5s ease;
       pointer-events: none;
-      z-index: 9999;
     }
-
     #successPopup.show {
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
@@ -129,7 +213,6 @@
 </head>
 
 <body>
-
   <div id="sidebar">
     <h2>HPCL Live Tracker</h2>
     <p><strong>Origin:</strong> Haldia Petrochemicals, WB</p>
@@ -141,10 +224,10 @@
 
     <!-- Tracking Tab -->
     <div id="tracking" class="tab-content active">
-      <label>Choose Stock Point:</label>
+      <label><strong>Choose Stock Point:</strong></label>
       <select id="stockSelect"></select>
 
-      <label>Select Region:</label>
+      <label><strong>Select Region:</strong></label>
       <select id="regionSelect">
         <option value="North">North</option>
         <option value="West">West</option>
@@ -152,7 +235,7 @@
         <option value="South">South</option>
       </select>
 
-      <label>Select Delivery Locations:</label>
+      <label><strong>Select Delivery Locations:</strong></label>
       <div id="checkboxContainer" class="checkbox-group"></div>
 
       <button id="showDeliveriesBtn">🚛 Show Deliveries</button>
@@ -185,53 +268,56 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <script>
-    /* ---------------------------------------------------------
-       FIXED: API CALLS NOW MATCH BACKEND EXACT ROUTES
-    --------------------------------------------------------- */
-
     const regionDeliveries = {
-      North: ["Alwar","Bareilly City","Baddi","Chandigarh","Gurugram","Hapur","Haridwar","Hoshiarpur","Jalandhar","Jammu","Kanpur","Kashipur","Loni, Gaziabad","Lucknow","Saharanpur","Solan","Yamunanagar","Azadpur"],
-      West: ["Ahmedabad","Ankleshwar","Dahej","Dombivli","Kandla, Gujarat","Khopoli","Lote","Mahad","Pune","Rajkot","Sabarkantha","Surat","Tarapur, Maharashtra","Vadodara","Valsad, Gujarat","Vapi, Gujarat"],
+      North: [
+        "Alwar","Bareilly City","Baddi","Chandigarh","Gurugram","Hapur","Haridwar",
+        "Hoshiarpur","Jalandhar","Jammu","Kanpur","Kashipur","Loni, Gaziabad",
+        "Lucknow","Saharanpur","Solan","Yamunanagar","Azadpur"
+      ],
+      West: [
+        "Ahmedabad","Ankleshwar","Dahej","Dombivli","Kandla, Gujarat","Khopoli",
+        "Lote","Mahad","Pune","Rajkot","Sabarkantha","Surat",
+        "Tarapur, Maharashtra","Vadodara","Valsad, Gujarat","Vapi, Gujarat"
+      ],
       East: [],
       South: []
     };
 
     function showSuccessPopup() {
-      const p = document.getElementById("successPopup");
-      p.classList.add("show");
-      setTimeout(() => p.classList.remove("show"), 2000);
+      const popup = document.getElementById("successPopup");
+      popup.classList.add("show");
+      setTimeout(() => popup.classList.remove("show"), 2500);
     }
 
+    // Map setup
     const map = L.map("map").setView([20.5937, 78.9629], 6);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
     const origin = [22.0667, 88.1145];
-
     const haldiaMarker = L.marker(origin, {
       icon: L.divIcon({
         className: "custom-marker",
-        html: `<div style="width:18px;height:18px;background-color:#d9534f;border-radius:50%;border:2px solid white"></div>`
+        html: `<div style="width:18px;height:18px;background-color:#d9534f;border:2px solid white;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,0.4);"></div>`,
+        iconSize: [18,18],
+        iconAnchor: [9,9],
       })
-    }).addTo(map);
+    }).bindPopup("Haldia Petrochemicals, WB").addTo(map);
 
     const stockSelect = document.getElementById("stockSelect");
     const regionSelect = document.getElementById("regionSelect");
     const checkboxContainer = document.getElementById("checkboxContainer");
     const showDeliveriesBtn = document.getElementById("showDeliveriesBtn");
+    const resetBtn = document.getElementById("resetBtn");
     const railDistanceDiv = document.getElementById("railDistance");
     const deliveryTableBody = document.getElementById("deliveryTableBody");
     const clearAllBtn = document.getElementById("clearAllBtn");
 
-    let stockData = {};
-    let currentStock = null;
-    let deliveryMap = {};
-    let railRouteLine = null;
-    let stockMarker = null;
+    let stockData = {}, currentStock = null, deliveryMap = {}, railRouteLine = null, stockMarker = null;
 
     async function loadRoutes() {
-      const res = await fetch("/routes");   // ✅ FIXED
+      const res = await fetch("/routes");
       stockData = await res.json();
-      Object.keys(stockData).forEach(key => {
+      Object.keys(stockData).forEach((key) => {
         const opt = document.createElement("option");
         opt.value = key;
         opt.textContent = stockData[key].name;
@@ -240,63 +326,67 @@
       setStockPoint(Object.keys(stockData)[0]);
     }
 
-    function createFixedMarker(color = "#228B22") {
+    function createFixedMarker(color="#228B22") {
       return L.divIcon({
-        className: "custom-marker",
-        html: `<div style="width:18px;height:18px;background:${color};border-radius:50%;border:2px solid #fff"></div>`
+        className:"custom-marker",
+        html:`<div style="width:18px;height:18px;background-color:${color};border:2px solid white;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,0.4);"></div>`,
+        iconSize:[18,18],
+        iconAnchor:[9,9]
       });
     }
 
     function drawRailRoute(stockKey) {
       if (railRouteLine) map.removeLayer(railRouteLine);
-      const coords = stockData[stockKey].route;
-      if (!coords) return;
-
-      let dist = 0;
-      for (let i = 1; i < coords.length; i++) {
-        dist += map.distance(coords[i - 1], coords[i]);
-      }
-      railDistanceDiv.innerHTML = `📏 Rail Route Distance: ${(dist / 1000).toFixed(1)} km`;
-
-      railRouteLine = L.polyline(coords, { color: "green", dashArray: "5,5", weight: 3 }).addTo(map);
+      const routeCoords = stockData[stockKey].route;
+      if (!routeCoords) return;
+      let total = 0;
+      for (let i = 1; i < routeCoords.length; i++)
+        total += map.distance(routeCoords[i - 1], routeCoords[i]);
+      const totalKm = (total / 1000).toFixed(1);
+      railDistanceDiv.innerHTML = `📏 Rail Route Distance: ${totalKm} km`;
+      railRouteLine = L.polyline(routeCoords, { color: "green", dashArray: "5,5", weight: 3 }).addTo(map);
     }
 
-    function setStockPoint(key) {
-      currentStock = stockData[key];
-
+    function setStockPoint(stockKey) {
+      const stock = stockData[stockKey];
+      currentStock = stock;
       if (stockMarker) map.removeLayer(stockMarker);
-
-      stockMarker = L.marker(currentStock.coords, {
-        icon: createFixedMarker("#228B22")
-      }).addTo(map);
-
-      map.setView(currentStock.coords, 7);
-      drawRailRoute(key);
+      stockMarker = L.marker(stock.coords, { icon: createFixedMarker("#228B22") })
+        .bindPopup(stock.name)
+        .addTo(map);
+      map.setView(stock.coords, 7);
+      drawRailRoute(stockKey);
     }
 
-    stockSelect.addEventListener("change", e => setStockPoint(e.target.value));
+    stockSelect.addEventListener("change", (e) => setStockPoint(e.target.value));
 
     function populateLocations(region) {
       checkboxContainer.innerHTML = "";
+      const selectAllLabel = document.createElement("label");
+      const selectAllCheckbox = document.createElement("input");
+      selectAllCheckbox.type = "checkbox";
+      selectAllCheckbox.id = "selectAll";
+      selectAllLabel.appendChild(selectAllCheckbox);
+      selectAllLabel.append(" Select All");
+      checkboxContainer.appendChild(selectAllLabel);
 
-      const selectAll = document.createElement("label");
-      selectAll.innerHTML = `<input type="checkbox" id="selectAll"> Select All`;
-      checkboxContainer.appendChild(selectAll);
-
-      regionDeliveries[region].forEach(city => {
+      regionDeliveries[region].forEach((city) => {
         const label = document.createElement("label");
-        label.innerHTML = `<input type="checkbox" value="${city}"> ${city}`;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = city;
+        label.appendChild(checkbox);
+        label.append(" " + city);
         checkboxContainer.appendChild(label);
       });
 
-      document.getElementById("selectAll").addEventListener("change", e => {
-        checkboxContainer.querySelectorAll("input[type='checkbox']:not(#selectAll)").forEach(
-          cb => cb.checked = e.target.checked
-        );
+      selectAllCheckbox.addEventListener("change", (e) => {
+        const boxes = checkboxContainer.querySelectorAll("input[type='checkbox']:not(#selectAll)");
+        boxes.forEach((box) => (box.checked = e.target.checked));
       });
     }
 
-    regionSelect.addEventListener("change", e => populateLocations(e.target.value));
+    regionSelect.addEventListener("change", (e) => populateLocations(e.target.value));
 
     async function getCoordinates(city) {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&countrycodes=in&limit=1`);
@@ -307,76 +397,146 @@
 
     async function addDelivery(city) {
       const coords = await getCoordinates(city);
-      if (!coords) return;
-
-      const [lat, lon, name] = coords;
+      if (!coords) return null;
+      const [lat, lon, display_name] = coords;
+      const dest = [lat, lon];
+      const fromName = currentStock?.name || "Unknown Origin";
 
       const url = `/route?start_lat=${currentStock.coords[0]}&start_lng=${currentStock.coords[1]}&end_lat=${lat}&end_lng=${lon}`;
-
-      const res = await fetch(url);   // ✅ FIXED
+      const res = await fetch(url);
+      if (!res.ok) return null;
       const data = await res.json();
+      if (!data.features || !data.features[0]) return null;
 
-      if (!data.features) return;
-
-      const routeCoords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+      const routeCoords = data.features[0].geometry.coordinates.map((c) => [c[1], c[0]]);
       const distance = (data.features[0].properties.segments[0].distance / 1000).toFixed(2);
       const duration = data.features[0].properties.segments[0].duration / 3600;
-      const time = `${Math.floor(duration)}h ${Math.round((duration % 1) * 60)}m`;
+      const hours = Math.floor(duration);
+      const minutes = Math.round((duration % 1) * 60);
+      const travelTime = `${hours}h ${minutes}m`;
 
       const routeLine = L.polyline(routeCoords, { color: "blue", weight: 3 }).addTo(map);
-      const destMarker = L.marker([lat, lon], { icon: createFixedMarker("#007bff") })
-        .bindPopup(`<b>${name}</b><br>${distance} km<br>${time}`)
+      const destMarker = L.marker(dest, { icon: createFixedMarker("#007bff") })
+        .bindPopup(`<b>${display_name}</b><br>📏 ${distance} km<br>⏱️ ${travelTime}`)
         .addTo(map);
 
-      // Add to table
+      deliveryMap[city] = { routeLine, destMarker, from: currentStock.coords };
+
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${currentStock.name}</td>
-        <td>${city}</td>
+        <td class="from-cell" style="color:#004494;cursor:pointer;">${fromName}</td>
+        <td class="to-cell" style="color:#007bff;cursor:pointer;">${city}</td>
         <td>${distance} km</td>
-        <td>${time}</td>
-        <td>✅ OK</td>
-        <td><button class="remove-btn">X</button></td>
-      `;
+        <td>${travelTime}</td>
+        <td class="status-ok">✅ OK</td>
+        <td><button class="remove-btn">×</button></td>`;
       deliveryTableBody.prepend(row);
+
+      // Highlight Interaction (Dark Black)
+      row.addEventListener("mouseenter", () => {
+        routeLine.setStyle({ color: "#000000", weight: 6, opacity: 0.95 });
+
+        destMarker._icon.style.transition = "transform 0.15s ease, filter 0.15s ease";
+        destMarker._icon.style.transform = "scale(1.4)";
+        destMarker._icon.style.filter = "drop-shadow(0 0 10px rgba(0,0,0,0.8))";
+        destMarker.setZIndexOffset(1000);
+
+        stockMarker._icon.style.transition = "transform 0.15s ease, filter 0.15s ease";
+        stockMarker._icon.style.transform = "scale(1.4)";
+        stockMarker._icon.style.filter = "drop-shadow(0 0 10px rgba(0,0,0,0.8))";
+        stockMarker.setZIndexOffset(1000);
+
+        routeLine.bringToFront();
+      });
+
+      row.addEventListener("mouseleave", () => {
+        routeLine.setStyle({ color: "blue", weight: 3, opacity: 1 });
+
+        destMarker._icon.style.transform = "scale(1)";
+        destMarker._icon.style.filter = "";
+        destMarker.setZIndexOffset(0);
+
+        stockMarker._icon.style.transform = "scale(1)";
+        stockMarker._icon.style.filter = "";
+        stockMarker.setZIndexOffset(0);
+      });
 
       row.querySelector(".remove-btn").addEventListener("click", () => {
         map.removeLayer(routeLine);
         map.removeLayer(destMarker);
         row.remove();
+        delete deliveryMap[city];
       });
+
+      return city;
     }
 
     showDeliveriesBtn.addEventListener("click", async () => {
-      const selected = [...checkboxContainer.querySelectorAll("input[type='checkbox']:checked:not(#selectAll)")]
-        .map(c => c.value);
+      const checked = Array.from(
+        checkboxContainer.querySelectorAll("input[type='checkbox']:checked:not(#selectAll)")
+      ).map((c) => c.value);
+      if (!checked.length) return alert("Please select at least one delivery location");
 
-      if (!selected.length) return alert("Please select at least one location.");
+      const loadingOverlay = document.createElement("div");
+      loadingOverlay.style.cssText = `
+        position: fixed; inset: 0; background: rgba(255,255,255,0.85);
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        font-family: 'Segoe UI', sans-serif; font-size: 18px; color: #004494; z-index: 9999;
+      `;
+      const spinner = document.createElement("div");
+      spinner.style.cssText = `
+        border: 4px solid #ccc; border-top: 4px solid #004494;
+        border-radius: 50%; width: 40px; height: 40px;
+        animation: spin 1s linear infinite; margin-bottom: 12px;
+      `;
+      const timerText = document.createElement("div");
+      timerText.textContent = "Loading... 0s";
+      loadingOverlay.append(spinner, timerText);
+      document.body.appendChild(loadingOverlay);
 
-      for (let i = 0; i < selected.length; i++) {
-        await addDelivery(selected[i]);
+      const style = document.createElement("style");
+      style.textContent = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+      document.head.appendChild(style);
+
+      let seconds = 0;
+      const timer = setInterval(() => {
+        seconds++;
+        timerText.textContent = `Loading... ${seconds}s`;
+      }, 1000);
+
+      for (let i = 0; i < checked.length; i++) {
+        const city = checked[i];
+        timerText.textContent = `Loading ${i + 1} of ${checked.length} (${(
+          ((i + 1) / checked.length) * 100
+        ).toFixed(0)}%)`;
+        await addDelivery(city);
       }
 
+      clearInterval(timer);
+      loadingOverlay.remove();
       showSuccessPopup();
     });
 
     clearAllBtn.addEventListener("click", () => {
-      deliveryTableBody.innerHTML = "";
-      Object.values(deliveryMap).forEach(d => {
-        if (d.routeLine) map.removeLayer(d.routeLine);
-        if (d.destMarker) map.removeLayer(d.destMarker);
+      Object.values(deliveryMap).forEach(({ routeLine, destMarker }) => {
+        if (routeLine) map.removeLayer(routeLine);
+        if (destMarker) map.removeLayer(destMarker);
       });
+      deliveryMap = {};
+      deliveryTableBody.innerHTML = "";
     });
 
-    document.querySelectorAll(".tab").forEach(tab => {
+    resetBtn.addEventListener("click", () => clearAllBtn.click());
+
+    document.querySelectorAll(".tab").forEach((tab) => {
       tab.addEventListener("click", () => {
-        document.querySelectorAll(".tab, .tab-content").forEach(el => el.classList.remove("active"));
+        document.querySelectorAll(".tab, .tab-content").forEach((el) => el.classList.remove("active"));
         tab.classList.add("active");
         document.getElementById(tab.dataset.tab).classList.add("active");
       });
     });
 
-    populateLocations("North");
+    populateLocations(regionSelect.value);
     loadRoutes();
   </script>
 </body>
